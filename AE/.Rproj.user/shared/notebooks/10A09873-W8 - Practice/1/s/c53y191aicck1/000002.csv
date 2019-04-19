@@ -1,0 +1,3 @@
+"0","vu <- varUsed(censusrf, count= TRUE)"
+"0","vusorted <- sort(vu, decreasing = FALSE, index.return = TRUE)"
+"0","dotchart(vusorted$x, names(censusrf$forest$xlevels[vusorted$ix]))"

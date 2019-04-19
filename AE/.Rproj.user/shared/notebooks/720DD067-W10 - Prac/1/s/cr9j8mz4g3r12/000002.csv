@@ -1,0 +1,7 @@
+"0","citi$Mon <- as.integer(citi$day==""Mon"")"
+"0","citi$Tue <- as.integer(citi$day==""Tue"")"
+"0","citi$Wed <- as.integer(citi$day==""Wed"")"
+"0","citi$Thu <- as.integer(citi$day==""Thu"")"
+"0","citi$Fri <- as.integer(citi$day==""Fri"")"
+"0","citi$Sat <- as.integer(citi$day==""Sat"")"
+"0","citi$Sun <- as.integer(citi$day==""Sun"")"

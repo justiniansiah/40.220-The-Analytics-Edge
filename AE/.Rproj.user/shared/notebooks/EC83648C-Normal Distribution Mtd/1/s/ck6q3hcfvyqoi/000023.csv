@@ -1,0 +1,1 @@
+"0","plot(x = plotter[,1], y = (100*(plotter[,2]-min(plotter[,2])))/(max(plotter[,2])-min(plotter[,2])),pch = 16, col=ifelse(plotter[,1]==100, ""red"", ""black""),xlab = ""Time Since Last Slept (H)"", ylab = ""Morale (%)"")"

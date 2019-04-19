@@ -1,0 +1,4 @@
+"0","parolepred <- predict(newdata=test,model1,type=""response"")"
+"2","Error in predict(newdata = test, model1, type = ""response"") : 
+  object 'model1' not found
+"

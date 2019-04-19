@@ -1,0 +1,59 @@
+"0","```r
+baseball <- read.csv(\"baseball.csv\")
+str(baseball)
+```"
+"1","'data.frame':	420 obs. of  17 variables:
+ $ Team        : Factor w/ 34 levels \"ANA\",\"ARI\",\"ATL\",..: 2 3 4 5 6 7 8 9 10 11 ...
+ $ League      : Factor w/ 2 levels \"AL\",\"NL\": 2 2 1 1 2 1 2 1 2 1 ...
+ $ Year        : int  2012 2012 2012 2012 2012 2012 2012 2012 2012 2012 ...
+ $ Games       : int  162 162 162 162 162 162 162 162 162 162 ...
+ $ W           : int  81 94 93 69 61 85 97 68 64 88 ...
+ $ RS          : int  734 700 712 734 613 748 669 667 758 726 ...
+ $ RA          : int  688 600 705 806 759 676 588 845 890 670 ...
+ $ OBP         : num  0.328 0.32 0.311 0.315 0.302 0.318 0.315 0.324 0.33 0.335 ...
+ $ SLG         : num  0.418 0.389 0.417 0.415 0.378 0.422 0.411 0.381 0.436 0.422 ...
+ $ BA          : num  0.259 0.247 0.247 0.26 0.24 0.255 0.251 0.251 0.274 0.268 ...
+ $ OPS         : num  0.746 0.709 0.728 0.73 0.68 0.74 0.726 0.705 0.766 0.757 ...
+ $ OOBP        : num  0.317 0.306 0.315 0.331 0.335 0.319 0.305 0.336 0.357 0.314 ...
+ $ OSLG        : num  0.415 0.378 0.403 0.428 0.424 0.405 0.39 0.43 0.47 0.402 ...
+ $ OOPS        : num  0.732 0.684 0.718 0.759 0.759 0.724 0.695 0.766 0.827 0.716 ...
+ $ Playoffs    : int  0 1 1 0 0 0 1 0 0 1 ...
+ $ RankSeason  : int  NA 4 5 NA NA NA 2 NA NA 6 ...
+ $ RankPlayoffs: int  NA 5 4 NA NA NA 4 NA NA 2 ...
+"
+"0","```r
+summary(baseball)
+```"
+"1","      Team     League        Year          Games             W         
+ ARI    : 14   AL:196   Min.   :1999   Min.   :161.0   Min.   : 43.00  
+ ATL    : 14   NL:224   1st Qu.:2002   1st Qu.:162.0   1st Qu.: 72.00  
+ BAL    : 14            Median :2006   Median :162.0   Median : 81.00  
+ BOS    : 14            Mean   :2006   Mean   :161.9   Mean   : 80.96  
+ CHC    : 14            3rd Qu.:2009   3rd Qu.:162.0   3rd Qu.: 90.00  
+ CHW    : 14            Max.   :2012   Max.   :163.0   Max.   :116.00  
+ (Other):336                                                           
+       RS               RA              OBP              SLG        
+ Min.   : 513.0   Min.   : 529.0   Min.   :0.2920   Min.   :0.3390  
+ 1st Qu.: 706.0   1st Qu.: 697.0   1st Qu.:0.3220   1st Qu.:0.4017  
+ Median : 752.5   Median : 754.5   Median :0.3320   Median :0.4200  
+ Mean   : 759.5   Mean   : 759.5   Mean   :0.3323   Mean   :0.4197  
+ 3rd Qu.: 813.0   3rd Qu.: 823.5   3rd Qu.:0.3410   3rd Qu.:0.4370  
+ Max.   :1009.0   Max.   :1028.0   Max.   :0.3730   Max.   :0.4910  
+                                                                    
+       BA              OPS             OOBP             OSLG       
+ Min.   :0.2330   Min.   :0.637   Min.   :0.2940   Min.   :0.3460  
+ 1st Qu.:0.2560   1st Qu.:0.725   1st Qu.:0.3210   1st Qu.:0.4010  
+ Median :0.2630   Median :0.752   Median :0.3310   Median :0.4190  
+ Mean   :0.2636   Mean   :0.752   Mean   :0.3323   Mean   :0.4197  
+ 3rd Qu.:0.2710   3rd Qu.:0.778   3rd Qu.:0.3430   3rd Qu.:0.4380  
+ Max.   :0.2940   Max.   :0.851   Max.   :0.3840   Max.   :0.4990  
+                                                                   
+      OOPS           Playoffs        RankSeason     RankPlayoffs  
+ Min.   :0.6460   Min.   :0.0000   Min.   :1.000   Min.   :1.000  
+ 1st Qu.:0.7228   1st Qu.:0.0000   1st Qu.:2.000   1st Qu.:3.000  
+ Median :0.7515   Median :0.0000   Median :4.000   Median :4.000  
+ Mean   :0.7520   Mean   :0.2714   Mean   :3.649   Mean   :3.158  
+ 3rd Qu.:0.7800   3rd Qu.:1.0000   3rd Qu.:5.000   3rd Qu.:4.000  
+ Max.   :0.8830   Max.   :1.0000   Max.   :7.000   Max.   :5.000  
+                                   NA's   :306     NA's   :306    
+"

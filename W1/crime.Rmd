@@ -1,0 +1,75 @@
+---
+title: "Crime Notebook"
+output: html_notebook
+---
+
+Increasingly governmental organizations are providing data access to citizens on stastistics such as occurrences of crimes. One such website is data.cityofchicago.org.
+
+This data set consists of 191641 observations with date, time, latitude and longitude of location of motor theft crimes.
+```{r}
+Crime <- read.csv("Crime.csv")
+str(Crime)
+```
+We first convert the date variable to a format that R can work with using strptime. Then, we extract the weekday from the date and then create a dataframe that counts the number of crimes on each day of the week. WeekdayCounts\$Var1 gives the day and WeekdayCounts\$Freq gives the number of crimes on the day.
+```{r}
+?strptime
+Crime$Date <- strptime(Crime$Date,format="%m/%d/%y %H:%M")
+Crime$Date[1:3]
+Crime$Date$hour[1]
+Crime$Weekdays <- weekdays(Crime$Date)
+Crime$Weekdays[1:3]
+table(Crime$Weekdays)
+WeekdayCounts <- as.data.frame(table(Crime$Weekdays))
+WeekdayCounts
+class(WeekdayCounts)
+```
+We creae a heatmap to plot the crime data. Towards this, we first create a variable that captures the hour which is easy to retrieve from the R object now. You can use ?DateTimeClasses to get details on calendar date and time class.
+```{r}
+Crime$Hour <- Crime$Date$hour
+```
+We next create a dataframe with 168 observations where Var1 is the weekday, Var2 is the hour of the crime and Freq is the number of crimes.
+```{r}
+WeekdayHourCounts <- as.data.frame(table(Crime$Weekdays,Crime$Hour))
+str(WeekdayHourCounts)
+head(WeekdayHourCounts$Var1)
+```
+We convert the variable to a chronological order rather than alphabetical order. Similarly, we covert Var2 to a numeric vector from factor. We need to use the intermediate as.characters to deal with how R stores factors.
+```{r}
+WeekdayHourCounts$Var1 <- factor(WeekdayHourCounts$Var1,ordered=TRUE,levels=c("Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"))
+head(WeekdayHourCounts$Var1)
+WeekdayHourCounts$Var2 <- as.numeric(as.character(WeekdayHourCounts$Var2))
+str(WeekdayHourCounts)
+```
+
+```{r}
+library(ggplot2)
+ggplot(WeekdayHourCounts,aes(x=Var2,y=Var1)) + geom_tile(aes(fill=Freq))+xlab("Hour of the day")
+```
+This figure is a heat map where the lighter color shows more motor vehicle thefts on that day and hour.
+```{r}
+ggplot(WeekdayHourCounts,aes(x=Var2,y=Var1)) + geom_tile(aes(fill=Freq))+xlab("Hour of the day")+scale_fill_gradient(low="white",high="red")
+```
+This figures shows the higher frequency values by read and lower by white helping the police identify hotspots more easily in practice. As the figure shows, there are more crimes on Friday nights around 22:00.
+
+We can also overlay heat maps with geographical maps. We use the packages maps and ggmap to combine Google Maps information with this.
+```{r}
+install.packages("maps")
+library(maps)
+install.packages("ggmap")
+library(ggmap)
+```
+We first retrieve a map of Chicago and plot it
+```{r}
+chicago <- get_map(location="chicago")
+ggmap(chicago)
+```
+The next command creates a new dataframe that captures latitude and longitude coordinates but rounds it so that the number of points reduce. We have 1638 observations where Var1 is the longitude and Var2 is the latitude and Freq is the number of theft in the area.
+```{r}
+LatLongCounts <- as.data.frame(table(round(Crime$Longitude,2),round(Crime$Latitude,2)))
+```
+We again convert the factor to numeric and then plot the hot spot map with longitude and latitude details.
+```{r}
+LatLongCounts$Var1 <- as.numeric(as.character(LatLongCounts$Var1))
+LatLongCounts$Var2 <- as.numeric(as.character(LatLongCounts$Var2))
+ggmap(chicago)  +geom_tile(data=LatLongCounts,aes(x=Var1,y=Var2,alpha=Freq),fill="red")
+```

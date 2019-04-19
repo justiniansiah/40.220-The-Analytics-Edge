@@ -1,0 +1,2 @@
+"0","plot18 <- summary(model17)$adjr2"
+"0","plot(plot18)"

@@ -1,0 +1,911 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+**************************************
+Week 1 - Question 6
+
+Internet privacy
+
+
+(a) Using read.csv(), load the dataset from AnonymityPoll.csv into a data frame called poll and summarize it with the summary() and str() unctions.
+How many people participated in the poll?
+
+```{r}
+poll <- read.csv("../W1/Prac/AnonymityPoll.csv")
+summary(poll)
+str(poll)
+
+
+```
+
+(b) Look at the breakdown of the number of people with smartphones using the table()
+command on the Smartphone variable.
+ How many interviewees responded that they use a smartphone?
+ How many interviewees responded that they don't use a smartphone?
+ How many interviewees did not respond to the question, resulting in a missing value, or NA, in the summary() output?
+
+```{r}
+table(poll$Smartphone)
+table(is.na(poll$Smartphone))
+```
+487 have smartphone
+472 no smartphone
+43 NA
+
+
+(c) Look at the breakdown of the number of people with smartphones and Internet use using the table() command.
+ How many interviewees reported not having used the Internet and not having used a smartphone?
+ How many interviewees reported having used the Internet and having used a smartphone?
+ How many interviewees reported having used the Internet but not having used a smartphone?
+ How many interviewees reported having used a smartphone but not having used the Internet?
+
+```{r}
+table(poll$Smartphone[poll$Internet.Use==0])
+table(poll$Smartphone[poll$Internet.Use==1])
+
+
+```
+
+both no: 186
+hv sm, no int: 17
+no sm, hv int: 285
+both yes: 470
+
+
+
+(d) Many of the response variables (Info.On.Internet, Worry.About.Info, Privacy.Importance,
+Anonymity.Possible, and Tried.Masking.Identity) were not collected if an interviewee does
+not use the Internet or a smartphone, meaning the variables will have missing values for
+these interviewees.
+ How many interviewees have a missing value for their Internet use?
+ How many interviewees have a missing value for their smartphone use?
+
+```{r}
+table(is.na(poll$Internet.Use))
+table(is.na(poll$Smartphone))
+
+
+```
+1 for internet
+43 for sm
+
+
+(e) Use the subset function to obtain a data frame called \limited", which is limited to
+interviewees who reported Internet use or who reported smartphone use.
+How many interviewees are in the new data frame?
+
+```{r}
+limited <- subset(poll,poll$Smartphone==1 | poll$Internet.Use==1)
+str(limited)
+
+```
+
+792 interviewees
+
+
+(f) For all the remaining questions use the limited data frame you have created.
+Which variables have missing values in the limited data frame?
+
+```{r}
+summary(limited)
+
+
+```
+
+Smartphone, Age, Conservativeness, WorryAboutInfo, PrivacyImportance, AnonymityPossible, TriedMaskingIdentity, PrivacyLawsEffective
+
+
+(g) What is the average number of pieces of personal information on the Internet, according
+to the Info.On.Internet variable?
+3.795
+
+(h) How many interviewees reported a value of 0 for Info.On.Internet?
+How many interviewees reported the maximum value of 11 for Info.On.Internet?
+
+```{r}
+table(limited$Info.On.Internet)
+
+
+```
+0 = 105
+11 = 8
+
+(i) What proportion of interviewees who answered the Worry.About.Info question worry
+about how much information is available about them on the Internet?
+
+
+```{r}
+str(limited$Worry.About.Info)
+table(limited$Worry.About.Info)
+386/(404+386)
+
+
+```
+48.8%
+
+
+
+(j) What proportion of interviewees who answered the Anonymity.Possible question think it
+is possible to be completely anonymous on the Internet?
+
+
+```{r}
+summary(limited$Anonymity.Possible)
+table(limited$Anonymity.Possible)
+278/(278+475)
+278+475
+
+```
+36.9%
+
+
+
+(k) Build a histogram of the age of interviewees.
+What is the best represented age group in the population - people aged around 20, people
+aged around 40, people aged around 60, people aged around 80?
+
+```{r}
+hist(limited$Age,breaks = seq(0,100,5),xlab="Age",main="Histogram")
+
+
+```
+20: 20-30
+60: 55-60
+80: 80
+
+
+
+(l) Both Age and Info.On.Internet are variables that take on many values, so a good way to
+observe their relationship is through a graph. However, because Info.On.Internet takes
+on a small number of values, multiple points can be plotted in exactly the same location
+on this graph using the plot() function.
+What is the largest number of interviewees that have exactly the same value in their Age
+variable and the same value in their Info.On.Internet variable?
+
+```{r}
+plot(x=limited$Age,y=limited$Info.On.Internet)
+max(table(limited$Age,limited$Info.On.Internet))
+which.max(table(limited$Age,limited$Info.On.Internet))
+
+```
+6
+
+
+
+(m) To avoid points covering each other up, we can use the jitter() function on the values
+we pass to the plot function. Experimenting with the command jitter(c(1, 2, 3)), what
+appears to be the functionality of the jitter command?
+```{r}
+jitter(c(1, 2, 3))
+
+
+```
+add random deviations to the values such than rounding will give back the original values
+
+
+(n) Now, plot Age against Info.On.Internet with plot(jitter(limited$Age), jitter(limited$Info.On.Internet)).
+Comment on the relationship you observe between Age and Info.On.Internet?
+
+```{r}
+plot(x=jitter(limited$Age),y=jitter(limited$Info.On.Internet))
+
+
+```
+Younger ppl put more info regarding photoes etc.
+olderppl put name and contact and home etc.
+
+
+(o) Use the tapply() function to find the average of the Info.On.Internet value, depending on
+whether an interviewee is a smartphone user or not?
+
+```{r}
+tapply(limited$Info.On.Internet,limited$Smartphone,mean)
+
+
+```
+
+if use smartphone user avg = 4.367
+if not sm user then avg is = 2.922
+
+
+(p) Similarly use tapply to break down the Tried.Masking.Identity variable for smartphone
+and non-smartphone users.
+ What proportion of smartphone users who answered the Tried.Masking.Identity ques-
+tion have tried masking their identity when using the Internet?
+ What proportion of non-smartphone users who answered the Tried.Masking.Identity
+question have tried masking their identity when using the Internet?
+
+
+```{r}
+table(limited$Tried.Masking.Identity,limited$Smartphone)
+
+
+```
+smarphone + mask = 93
+non sm + try mask= 33
+
+*******************************
+Week 2 - Question 6
+Wines
+
+
+(a) Define two new variables age91 and age92 that captures the age of the wine (in years) at
+the time of the auctions. For example, a 1961 wine would have an age of 30 at the auction
+in 1991. What is the average price of wines that were 15 years or older at the time of the
+1991 auction?
+
+```{r}
+wine <- read.csv("../W2/0) Prac/winedata.csv")
+str(wine)
+wine$age91 <- 1991-wine$vintage
+wine$age92 <- 1992-wine$vintage
+
+mean(wine$price91[wine$age91>=15])
+
+```
+
+
+(b) What is the average price of the wines in the 1991 auction that were produced in years
+when both the harvest rain was below average and the temperature dierence was below
+average?
+
+```{r}
+mean(wine$price91[wine$hrain<mean(wine$hrain) & wine$tempdiff < mean(wine$tempdiff)])
+
+
+```
+
+(c) In this question, you will develop a simple linear regression model to t the log of the
+price at which the wine was auctioned in 1991 with the age of the wine. To t the model,
+use a training set with data for the wines up to (and including) the year 1981. What is
+the R-squared for this model?
+
+```{r}
+winetrain <- subset(wine,wine$vintage<=1981)
+winetest <- subset(wine,wine$vintage>1981)
+model1 <- lm(log(price91)~age91, data = winetrain)
+summary(model1)
+
+
+```
+0.6675
+
+
+(d) Find the 99% condence interval for the estimated coecients from the regression.
+```{r}
+confint(level=0.99,model1)
+
+```
+
+(e) Use the model to predict the log of prices for wines made from 1982 onwards and auctioned
+in 1991. What is the test R-squared?
+
+```{r}
+winepred <- predict(model1,newdata=winetest)
+summary(winepred)
+
+sse <- sum ((winepred - log(winetest$price91))^2 )
+sst <- sum(( log(winetest$price91) - mean(log(winetrain$price91)) )^2)
+1-sse/sst
+
+
+```
+
+(f) Which among the following options describes best the quality of t of the model for
+this dataset in comparison with the Bordeaux wine dataset that was analyzed by Orley
+Ashenfelter?
+ The result indicates that the variation of the prices of the wines in this dataset is
+explained much less by the age of the wine in comparison to Bordeaux wines.
+ The result indicates that the variation of the prices of the wines in this dataset is
+explained much more by the age of the wine in comparison to Bordeaux wines.
+ The age of the wine has no predictive power on the wine prices in both the datasets.
+
+2? what is the dataset????
+
+
+
+
+
+(g) Construct a multiple regression model to t the log of the price at which the wine was
+auctioned in 1991 with all the possible predictors (age91, temp, hrain, wrain, tem-
+pdi) in the training dataset. To t your model, use the data for wines made up to (and
+including) the year 1981. What is the R-squared for the model?
+
+```{r}
+model2 <- lm(data=winetrain,log(price91)~age91+temp+hrain+wrain+tempdiff)
+summary(model2)
+
+
+```
+0.7938
+
+
+(h) Is this model preferred to the model with only the age variable as a predictor (use the
+adjusted R-squared for the model to decide on this)?
+
+
+Yes as the r2 value is larger
+
+
+
+(i) Which among the following best describes the output from the tted model?
+ The result indicates that less the temperature, the better is the price and quality of
+the wine
+ The result indicates that greater the temperature dierence, the better is the price
+and quality of wine.
+ The result indicates that lesser the harvest rain, the better is the price and quality of
+the wine.
+ The result indicates that winter rain is a very important variable in the t of the data.
+
+
+2
+
+
+(j) Of the ve variables (age91, temp, hrain, wrain, tempdi), drop the two variables
+that are the least signicant from the results in (g). Rerun the linear regression and write
+down your tted model.
+
+```{r}
+model3 <- lm(data=winetrain,log(price91)~vintage+age91+temp+hrain)
+summary(model3)
+
+
+```
+
+(k) Is this model preferred to the model with all variables as predictors (use the adjusted
+R-squared in the training set to decide on this)?
+
+model1: R2= 0.6675,adjR2=0.65
+model2: R2= 0.7938,adjR2=0.7145
+model3: R2= 0.7753,adjR2=0.7304
+
+model 3 is preferred.
+
+
+
+(l) Using the variables identied in (j), construct a multiple regression model to t the log
+of the price at which the wine was auctioned in 1992 (remember to use age92 instead of
+age91). To t your model, use the data for wines made up to (and including) the year
+1981. What is the R-squared for the model?
+```{r}
+model4 <- lm(data=winetrain,log(price92)~vintage+age92+temp+hrain)
+summary(model4)
+
+
+```
+
+r-squared = 0.5834
+
+
+(m) Suppose in this application, we assume that a variable is statistically signicant at the 0.2
+level. Would you would reject the hypothesis that the coecient for the variable hrain is
+nonzero?
+
+no insufficient evidence to reject at the 20% confidence level.
+
+
+(n) By separately estimating the equations for the wine prices for each auction, we can better
+establish the credibility of the explanatory variables because:
+ We have more data to t our models with.
+ The eect of the weather variables and age of the wine (sign of the estimated coe-
+cients) can be checked for consistency across years.
+ 1991 and 1992 are the markets when the Australian wines were traded heavily.
+Select the best option.
+
+2????
+
+
+(o) The current t of the linear regression using the weather variables drops all observations
+where any of the entries are missing. Provide a short explanation on when this might not
+be a reasonable approach to use.
+
+There might be some days where weather is not recorded but the other factors are important.
+
+
+****************
+Week 3 - Question 2
+Parole
+
+
+(a) Load the dataset Parole.csv into a data frame called Parole. How many parolees are
+contained in the dataset?
+
+```{r}
+paroles <- read.csv("../W3/0) Prac/Parole.csv")
+str(paroles)
+
+
+```
+675 parolees
+
+
+(b) How many of the parolees in the dataset violated the terms of their parole?
+```{r}
+table(paroles$Violator)
+
+
+```
+78 violators
+
+
+Which variables in this dataset are unordered factors with at least three levels? 
+To deal with unordered factors in a regression model, the standard practice is to define one level as the \reference level" and create a binary variable for each of the remaining levels. In this way, a factor with n levels is replaced by n-1 binary variables. We will see this in question (e).
+```{r}
+str(paroles)
+
+
+```
+state and crime
+
+
+(d) To ensure consistent training/testing set splits, run the following 5 lines of code (do not
+include the line numbers at the beginning):
+(1) > set.seed(144)
+(2) > library(caTools)
+(3) > split <􀀀 sample.split(Parole$Violator, SplitRatio = 0.7)
+(4) > train <􀀀 subset(Parole, split == TRUE)
+(5) > test <􀀀 subset(Parole, split == FALSE)
+Roughly what proportion of parolees have been allocated to the training and testing sets?
+Now, suppose you re-ran lines (1)-(5) again. What would you expect?
+ The exact same training/testing set split as the rst execution of (1)-(5)
+ A dierent training/testing set split from the rst execution of (1)-(5)
+If you instead ONLY re-ran lines (3)-(5), what would you expect?
+ The exact same training/testing set split as the rst execution of (1)-(5)
+ A dierent training/testing set split from the rst execution of (1)-(5)
+If you instead called set.seed() with a dierent number and then re-ran lines (3)-(5), what
+would you expect?
+ The exact same training/testing set split as the rst execution of (1)-(5)
+ A dierent training/testing set split from the rst execution of (1)-(5)
+```{r}
+set.seed(144)
+library(caTools)
+split  <- sample.split(paroles$Violator,SplitRatio = 0.7)
+train  <- subset(paroles,split == TRUE)
+test <- subset(paroles,split == FALSE)
+
+```
+
+same
+different
+different
+
+
+(e) Using glm, train a logistic regression
+model on the training set. Your dependent variable is \Violator", and you should use
+all the other variables as independent variables. What variables are signicant in this model? Signicant variables should have a least one star, or should have a p-value less
+than 0.05.
+```{r}
+model1 <- glm(data=train,Violator~.,family=binomial)
+summary(model1)
+
+```
+
+Intercept, RaceWhite, StateVirginia, MultipleOffences
+
+
+(f) What can we say based on the coecient of the MultipleOenses variable?
+ Our model predicts that parolees who committed multiple oenses have 1.61 times
+higher odds of being a violator than the average parolee.
+ Our model predicts that a parolee who committed multiple oenses has 1.61 times
+higher odds of being a violator than a parolee who did not commit multiple oenses
+but is otherwise identical.
+ Our model predicts that parolees who committed multiple oenses have 5.01 times
+higher odds of being a violator than the average parolee.
+ Our model predicts that a parolee who committed multiple oenses has 5.01 times
+higher odds of being a violator than a parolee who did not commit multiple oenses
+but is otherwise identical.
+
+
+```{r}
+exp(1.6119919)
+```
+(3)
+
+
+(g) Consider a parolee who is male, of white race, aged 50 years at prison release, from Ken-
+tucky, served 3 months, had a maximum sentence of 12 months, did not commit multiple
+oenses, and committed a larceny. 
+- According to the model, what are the odds this individual is a violator? 
+- According to the model, what is the probability this individual is a violator?
+
+```{r}
+logodds <- -2.0361809 + 0.3869904 + -0.8867192 + -0.0001756*50 + -0.1238867*3 +0.0802954*12 + 0.6954770
+logodds
+exp(logodds)
+
+1/(1+exp(-logodds))
+
+```
+
+(h) Use the predict() function to obtain the model's predicted probabilities for parolees in
+the test set. What is the maximum predicted probability of a violation?
+
+```{r}
+parolepred <- predict(newdata=test,model1,type="response")
+summary(parolepred)
+
+max(parolepred)
+```
+
+(i) In the following questions, evaluate the model's predictions on the test set using a thresh-
+old of 0.5. What is the model's sensitivity? What is the model's specicity? What is the
+model's accuracy?
+
+```{r}
+table(parolepred >= 0.5, test$Violator)
+
+ 12/(11+12)
+  167/(167+12)
+  (167+12)/202
+```
+
+TPR (Sensitivity):   TP/ (TP+FN)   12/(11+12)
+TNR (Specificity):   TN/ (FP+TN)   167/(167+12)
+Overall Accuracy: (TP+TN)/ (TN+FN+FP+TP) (167+12)/202 = 0.886
+
+
+(j) What is the accuracy of a simple model that predicts that every parolee is a non-violator?
+
+```{r}
+table(parolepred >= 1, test$Violator)
+
+179/202
+```
+
+
+(k) Consider a parole board using the model to predict whether parolees will be violators or
+not. The job of a parole board is to make sure that a prisoner is ready to be released into
+free society, and therefore parole boards tend to be particularily concerned with releasing
+prisoners who will violate their parole. Which of the following most likely describes their
+preferences and best course of action?
+
+> The board assigns more cost to a false negative than a false positive, and should
+therefore use a logistic regression cutoff less than 0.5. <
+
+
+(l) Which of the following is the most accurate assessment of the value of the logistic regression model with a cutoff 0.5 to a parole board, based on the model's accuracy as compared to the simple baseline model?
+
+> The model is likely of value to the board, and using a different logistic regression cutoff is likely to improve the model's value.
+
+
+(m) Using the ROCR package, what is the AUC value for the model?
+
+```{r}
+library(ROCR)
+ROCR_Predict <- prediction(parolepred, test$Violator)
+
+performance(ROCR_Predict, measure = "auc")@y.values
+
+```
+
+
+(n) Describe the meaning of AUC in this context.
+> The probability the model can correctly dierentiate between a randomly selected parole violator and a randomly selected parole non-violator.
+
+(o) Our goal has been to predict the outcome of a parole decision, and we used a publicly
+available dataset of parole releases for predictions. In this nal problem, we'll evaluate a
+potential source of bias associated with our analysis. It is always important to evaluate
+a dataset for possible sources of bias. The dataset contains all individuals released from
+parole in 2004, either due to completing their parole term or violating the terms of
+their parole. However, it does not contain parolees who neither violated their parole
+nor completed their term in 2004, causing non-violators to be underrepresented. This is
+called \selection bias" or \selecting on the dependent variable," because only a subset of
+all relevant parolees were included in our analysis, based on our dependent variable in this
+analysis (parole violation). How could we improve our dataset to best address selection
+bias?
+
+> We should use a dataset tracking a group of parolees from the start of their parole
+until either they violated parole or they completed their term.
+
+
+
+
+*************
+Week 3 - Question 4
+
+
+US Elections
+
+(a) Read the dataset into the dataframe pres. In the elections starting from 1916 up to and
+including 2012, which party has won more presidential elections? How many elections has
+that party won?
+
+
+```{r}
+pres <-  read.csv("../W3/0) Prac/presidential.csv")
+str(pres)
+table(pres$WIN)
+```
+
+Democrats won more. 14 vs 11
+
+
+(b) Who among the nominees have represented the Democrats and the Republicans in the
+most number of presidential elections? How many times have they respectively done so?
+
+```{r}
+
+sort(table(pres$DEM))
+sort(table(pres$REP))
+```
+
+3 Nixon for REP
+4 Roosevelt for DEM
+
+
+(c) Use a two-sided t-test to verify if there is evidence to show that the number of good
+quarters when the president is Republican is dierent from the number of good quarters
+when the president is Democratic. What is the p-value of the test and your conclusion?
+```{r}
+pres$GOOD
+t.test(pres$GOOD[pres$WIN==1],pres$GOOD[pres$WIN==-1])
+
+```
+
+p value = 0.3322
+Insufficient evidence to show that good quarters are different.
+
+
+(d) Defne a new variable WININC that takes a value of 1 if the presidential nominee of the
+incumbent party wins and 0 otherwise. Provide the R command(s) that you used to create
+this variable.
+
+```{r}
+
+pres$WININC <- as.integer(pres$INC==pres$WIN)
+
+```
+
+(e) How many times did the presidential nominee from the incumbent party win and how
+many times did the presidential nominee from the incumbent party lose?
+
+```{r}
+table(pres$WININC)
+
+
+```
+incumbent won 16 times, lost 9 times
+
+(f) Perform a simple logistic regression to predict the WININC variable using the GROWTH
+variable and the constant. What is the log-likelihood value for the model?
+
+```{r}
+
+model1 <- glm(data=pres,WININC~GROWTH,family=binomial)
+summary(model1)
+
+-0.5*model1$deviance
+2*(1+1)-2*(-0.5*model1$deviance)
+
+
+```
+LL = (-0.5)*(Residual deviance) = -13.18257
+
+
+(g) The GROWTH variable is:
+- Significant at the 0.1 level
+
+
+(h) Unlike questions (d) to (g) which looked at the incumbent party's winning chances, from this point onwards, we are going to predict the chances of the Democratic party nominee winning in the presidential election. To do this, we need to transform the variables as
+follows:
+i. Transform the WIN variable to be 1 when the presidential winner is a Democrat and 0 when the winner is a Republican.
+ii. Transform the GROWTH variable as follows: When the growth rate is positive (say
+4.623) and the Republican party is incumbent, we should transform it to a negative
+value -4.623 since this should have a negative eect on the Democratic nominee's
+chances of winning while if the growth rate is negative (say -4.623) and the Republican
+party is incumbent, we should transform it to positive 4.623 since this should have a
+positive eect on the Democratic nominee's chances of winning.
+Write down the R command(s) for i and ii.
+
+```{r}
+presnew <- pres
+presnew$WIN <- as.integer(presnew$WIN==1)
+
+presnew$GROWTH <- pres$INC * presnew$GROWTH
+
+presnew$GROWTH
+
+
+```
+
+(i) Repeat step ii in question (h) for the GOOD variable. You are now ready to develop a
+logistic regression model for the WIN variable using the predictor variables INC, RUN,
+DUR, GROWTH, GOOD and the constant (intercept). Use all the observations to
+build your model. What is the AIC of the model?
+
+```{r}
+presnew$GOOD <- pres$INC * presnew$GOOD
+presnew$GOOD
+
+model2 <- glm(data=presnew,WIN~+INC+RUN+DUR+GROWTH+GOOD,family=binomial)
+summary(model2)
+
+
+```
+AIC = 29.406
+
+
+v(j) Among the predictor variables INC, RUN, DUR, GROWTH, GOOD and the constant
+(intercept), identify the three least signicant variables?
+
+intercept,INC,GOOD
+
+
+(k) Drop the three variables identied in question (j) and rebuild you logistic regression model.
+What is the AIC of the new model?
+
+```{r}
+model3 <- glm(data=presnew,WIN~RUN+DUR+GROWTH-1,family=binomial)
+summary(model3)
+
+
+```
+
+23.748
+
+
+
+(l) In this new model, what is the smallest signicance level at which you would reject the
+null hypothesis that the coecient for the variable DUR is zero? Suppose, we now decide
+to use a level of 0.10, what would your suggestion be?
+
+
+11%
+
+
+(m) Which among the two models that you have developed in questions (i) and (k) do you
+prefer? Explain your reasons briefly
+
+model 2 is preferred as it has a lower AIC, the values RUN and GROWTH are also more significant in the model.
+
+
+(n) We will now evaluate the probability of H.Clinton winning the 2016 election with this model
+where H.Clinton is the Democratic nominee and D.Trump is the Republican nominee.
+What should be the corresponding INC, RUN and DUR variables?
+
+INC = 1
+RUN = 0
+DUR = 1
+
+(o) The forecasted growth rate from analysts of the U.S. economy for this year is 2%. Based
+on this, what is the probability of H.Clinton winning in the upcoming election based on
+the model you developed in question (11)?
+
+GROWTH = 2
+
+Logodds = -1.7852 + 2*0.4690
+Odds = exp(logodds)
+prob = 1/1+(-logodds)
+
+
+```{r}
+(-1.7852) + (2*0.4690) 
+exp(-0.8472)/(1+exp(-0.8472))
+
+1/(1+(exp(-(-1.7852 + 2*0.4690))))
+```
+
+***************
+Week 4 & 5 Question 4
+
+College
+
+(a) Split the data set into a training set and a test set using the seed 1 and the sample()function with 80% in the training set and 20% in the test set. How many observations are there in the training and test sets?
+```{r}
+college <- read.csv("../W4/0) Prac (W4 & W5)/College.csv")
+str(college)
+
+set.seed(1)
+trainid <- sample(1:nrow(college),0.8*nrow(college))    
+testid <- -trainid
+train<- college[trainid,]
+test<- college[testid,]
+str(test)
+str(train)
+```
+Train has 621
+Test has 156
+
+
+(b) Fit a linear model using least squares on the training set. What is the average sum of
+squared error of the model on the training set? Report on the average sum of squared
+error on the test set obtained from the model.
+
+
+```{r}
+model1 <- lm(data=train, Apps~.)
+summary(model1)
+
+mean(model1$residuals^2)
+
+```
+
+avg sse = 1,061,946
+
+(c) Use the backward stepwise selection method to select the variables for the regression
+model on the training set. Which is the first variable dropped from the set?
+
+```{r}
+library(leaps)
+model3 <- regsubsets(Apps~.,college,nvmax=18,method="backward")
+summod3 <- summary(model3)
+summod3
+```
+perc.alumni is the first to be dropped
+
+
+(d) Plot the adjusted R2 for all these models. If we choose the model based on the best
+adjusted R2 value, which variables should be included in the model?
+
+```{r}
+plot(summod3$adjr2)
+max(summod3$adjr2)
+chosen <- which.max(summod3$adjr2)
+chosen
+summod3$which[chosen,]
+```
+Intercept+Private+Accept+Enroll+Top10perc+Top25perc+F.Undergrad+Outstate+Room.Board+PhD+S.F.Ratio+Expend+Grad.Rate
+
+
+(e) Use the model identied in part (d) to estimate the average sum of squared test error.
+Does this improve on the model in part (b) in the prediction accuracy?
+
+
+```{r}
+model4 <- lm(data=train, Apps~Private+Accept+Enroll+Top10perc+Top25perc+F.Undergrad+Outstate+Room.Board+PhD+S.F.Ratio+Expend+Grad.Rate
+)
+
+summary(model4)
+
+model4pred <- predict(model4,newdata=test)
+
+mean((test$Apps - model4pred)^2)
+```
+
+
+(f) Fit a LASSO model on the training set. Use the command to define the grid for :
+grid <- 10^ seq(10,-2, length=100)
+Plot the behavior of the coecients as  changes.
+
+
+```{r}
+library(glmnet)
+grid <- 10^ seq(10,-2, length=100)
+x <- model.matrix(Apps~.,college)
+y <- college$Apps
+
+modellasso <- glmnet(x[trainid,],y[trainid],lambda=grid)
+plot(modellasso,xvar="lambda")
+```
+
+(g) Set the seed to 1 before running the cross-validation with LASSO to choose the best .
+Use 10-fold cross validation. Report the test error obtained, along with the number of
+non-zero coecient estimates.
+
+```{r}
+set.seed(1)
+
+cvlasso <- cv.glmnet(x[trainid,],y[trainid])   #lambda=grid may help (default is NULL)
+cvlasso$glmnet.fit
+cvlasso$lambda.min
+
+predictlassocv <- predict(modellasso,s=cvlasso$lambda.min,newx=x[testid,])
+
+summary(predictlassocv)
+cvlasso$nzero
+cvlasso$glmnet.fit
+```
+
+
+The best lambda is given as 0.4977024
+
+Number of non-zero coefficients found with cvlasso$nzero, is 17, which uses all predictor varaibles.
+
+ The test-error is same as in (b) of  0.9343 
+
+
+```{r}
+
+```

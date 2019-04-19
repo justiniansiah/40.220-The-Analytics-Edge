@@ -1,0 +1,2 @@
+"0","tree1o <- prune(tree2,cp=0.002)"
+"0","prp(tree1o)"

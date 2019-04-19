@@ -1,0 +1,57 @@
+---
+title: "Old Faithful Notebook"
+output: html_notebook
+---
+ 
+Lists datasets available in R
+```{r}
+data()
+```
+Loads the Old Faithful Geyser dataset
+```{r}
+data(faithful)
+ls()
+```
+Compactly displays the internal structure of the R object - Here it is a dataframe with 272 observations and 2 variables
+```{r}
+str(faithful)
+```
+Editing a dataset
+```{r}
+new <- edit(faithful)
+```
+Old Faithful Geyser is a hot spring that occasionally becomes unstable and erupts hot wate and steam in the air. The Old Faithful Geyser is at Yellowstone Park, Wyoming.
+
+Simple plots - scatter plot, histogram, time series plot, empirical cumulative distribution, Q-Q plot for normal quantile plot, box plot
+```{r}
+?plot
+plot(faithful)
+hist(faithful$eruptions)
+?hist
+hist(faithful$eruptions,seq(1.6,5.2,0.2))
+plot(faithful$eruptions)
+plot(faithful$eruptions,type="l")
+?plot.ecdf
+plot.ecdf(faithful$eruptions)
+?qqnorm
+qqnorm(faithful$eruptions)
+qqnorm(faithful$eruptions[faithful$eruptions>3])
+qqnorm(faithful$eruptions[faithful$eruptions<=3])
+boxplot(faithful$eruptions)
+```
+Some obserations from the plots:
+1. Eruption times and the waiting times between successive eruptions exhibit highly oscillatory behavior, low followed by high and high followed by low.
+2. Eruption times have a bimodal distribution.
+3. Lower eruption times are followed by lower waiting times. Higher eruption times are followed by higher waiting times. This can be used to predict when the next geyser eruption will occur. For example, during a short eruption, less water and heat are used and so both are restored in shorter time. During longer eruptions, more time is needed to rebuild.
+
+Performs a one sample t-test to test the hypothesis that the mean value = 0 and derives the 95% confidence interval for the mean parameter. With 95% confidence, if the eruption time < 3, the average waiting time is between 53.3 and 55.67, if the eruption time >= 3, the average waiting time is between 79.1 and 80.89. 
+```{r}
+faithful1 <- subset(faithful,faithful$eruptions <= 3)
+faithful2 <- subset(faithful,faithful$eruptions > 3)
+summary(faithful1$waiting)
+?t.test
+str(faithful1)
+t.test(faithful1$waiting)
+t.test(faithful2$waiting)
+```
+

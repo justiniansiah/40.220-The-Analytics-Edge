@@ -1,0 +1,5 @@
+"0","#A CART model called spamCART"
+"0","library(rpart)"
+"0","library(rpart.plot) "
+"0","set.seed(123)"
+"0","spamCART <- rpart(data=train, spam~., method = ""class"")"

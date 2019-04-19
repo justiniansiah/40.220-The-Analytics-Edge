@@ -1,0 +1,616 @@
+	[[[[       Basic R      ]]]]
+
+ ** Dataframe Commands **
+df <- read.csv("filename.csv")		Read csv into variable named df
+colnames(df)				Gives list of column names
+max(df$x1)				Returns the highest x1 value in the df
+max(df$Y[df$x1==0])			Returns the highest Y value of all the x1 = 0 values
+which.max(df$x1)			Returns the row number of the highest x1 value
+
+df[100,0]				Returns all column values of row 100
+sort(list, decreasing=TRUE, index.return = TRUE) Returns a sorted list in decreasing order
+
+rowSums(df[,3:12])==0) 			Sum all values from row 3-12 and see if it is 0 (True/False)
+as.integer
+as.logical
+
+scale(df$x1)				Scales the variable using its own mean and sd
+pnorm() 				BIG PHI
+dnorm()   				small phi
+
+ ** Apply **
+"Find the average of x1, depending on x2"
+> tapply(df$x1,df$x2,mean)
+
+tapply(df$x1,df$x2,sum)			Gives a list of x1 with x2 summed for each corresponding value
+
+ ** Subsets **
+subset(df, select= -c(variable)) 	Removing 1 variable	
+subset(df, varX1 = varX2)		Making a subset only using data where X1=X2
+
+ ** Correlation **
+cor(df) 				Matrix of correlations in dataframe
+cor(df$x1,df$x2)			Correlation between specific variables
+cor(df[c("Year","RankSeason","RA","NumCompetitors")])
+
+ ** Scatterplot Matrix **
+pairs(df)		Matrix of all scatterplots
+
+ ** Plots **
+plot(df$x1,df$x2)	Plot graph of x=x1, y=x2
+additional flags:
+	> main = "Title"
+	> xlab = "X-axis label"
+	> ylab = "Y-axis label"
+
+hist(df$x1) 		Creates histogram of x1 values
+hist(df$x1, breaks=seq(0,100,5)) Adds breaks 0-100, in breaks of 5
+
+stars(df)		Creates a star matrix
+
+ ** T-Test **
+t.test(df$x1)		Conducts t-test of H0: mean of x1 = 0
+t.test(df$x1,df$x2)	Conducts t-test of H0: x1=x2
+
+
+
+	[[[[  Linear Regression  ]]]]
+	
+model <- lm(data=df, Y~x1+x2+...)   [Y~. for all variables]
+summary(model)
+> Residuals (5 impt val)
+> coefficients
+> Multiple R-squared
+> Adjusted R-Squared
+
+$coefficients (shows coefficient values and significance)
+$coef (same as coefficients)
+$residuals (show all residuals)
+
+ ** Predictor Selection **
+- Usually set by qn
+- Or use all Y~.
+- or use Step() function on existing model to choose best via AIC (lowest)
+step(model)
+
+ ** Splitting via subsetting **
+
+subset(df,df$x1 <= 999 & !is.na(df$x2))  == "Take all x1 <= 999 and x2 is not NA"
+
+ ** Graphs **
+plot(df$x1,df$x2)	== "Plot graph of x=x1, y=x2"
+pairs(df)		== Matrix of all scatterplots
+abline(model)    	== "Put the regression line there"
+plot(train$x1,train$x2,col=ifelse(train$Y>=mean(train$Y),"red","black")) == "Show effect of x1 and x2 on Y"
+
+ ** SSE and SST of model on TRAINING SET **
+sse <- sum(model$residuals^2)			(Residuals give response minus fitted values)
+sst <- sum( ( train$Y - mean(train$Y) )^2 )
+1 - sse/sst
+
+ ** Predictions ie model on TEST SET **
+ModelPredict <- predict(model, newdata = test)  **** [for (glm) need include (type="response")]
+
+ModelPredict2 <- predict(model, newdata = data.frame(x1=100))
+> gives a prediction when x1 = 100 (assuming model only uses x1 for prediction)
+
+ModelPredict3 <- predict(model, newdata = test, interval=c("confidence"),level=.99)
+> gives the 99% confidence interval of the prediction
+
+ ** SSE and SST of model on TEST SET ** 
+sse <- sum( (ModelPredict - test$Y)^2 )
+sst <- sum( (test$Y - mean(TRAIN$Y))^2)
+1-sse/sst
+
+ ** Confidence Interval **
+confint(model, level = 0.99)		gives 99% confidence intervals
+
+ ** AIC **
+> Lower is better
+AIC = 2k - 2log(likelihood), k is number of estimated parameters
+OR
+LL = (-0.5)*(Residual deviance)
+
+
+
+	[[[[  Logistic Regression  ]]]]
+
+model <- glm(data=df, family="binomial", Y~.)
+
+ModelPredict <- predict(model, newdata = test, type="response")   #MUST PUT RESPONSE
+
+
+ ** Splitting Data **
+	//splitting data using caTools (For Logistic regression to get stratified sampling)
+library(caTools)
+split <- sample.split(df$Y, SplitRatio = 0.7)
+train <- subset(df, split == TRUE)
+test <- subset(df, split == FALSE)
+
+ ** Confusion Matrix **
+table(row,column)
+table(ModelPredict >= ThresholdVal, test$x1)      #must have >= thresholdVal for logistic type regressions
+table(as.integer(ModelPredict >= 0.5),test$x1)
+		   Actual=0   Actual=1	      0   1
+	Predict=0     TN 	 FN	  0 167  11
+	Predict=1     FP 	 TP	  1  12  12
+
+	FPR (Type I Error):  FP/ (FP+TN)
+	TNR (Specificity):   TN/ (FP+TN)   167/(167+12)
+	TPR (Sensitivity):   TP/ (TP+FN)   12/(11+12)
+	FNR (Type II Error): FN/ (TP+FN)
+	Overall Accuracy: (TP+TN)/ (TN+FN+FP+TP) (167+12)/202 = 0.886
+
+	> Predict model using test data, then compare with test$x1
+	> ThresholdVal is usually 0.5
+	> Gives a confusion matrix with 
+		ACTUAL as the COLUMNS
+		PREDICTIONS along the ROWs
+
+> table(test$x1) > predicting ALL are 0
+> FN vs FP > if want to have more FP than FN, lower the cutoff
+
+
+
+  ** AREA UNDER CURVE (Higher Better) **
+library(ROCR)
+ROCR_Predict <- prediction(ModelPredict, test$x1)
+
+performance(ROCR_Predict, x.measure = "fpr", measure= "tpr")
+plot() ^
+
+performance(ROCR_Predict, measure = "auc")@y.values
+	measure:Performance measure to use for the evaluation (list in help? performance)
+	usually is auc, tpr, fpr, tnr, fnr
+ 
+** Log of Odds **
+>Use the model stuff and add tgt
+logodds <- model$coef[1] + A1*model$coef[2] + A2*model$coef[3] + ...
+
+>odds = e^logodds
+odds <- exp(logodds) 
+
+probability = 1/(1+exp(-Logodds))
+OR
+probability = odds/(1+odds) , odds = exp(logodds)
+
+
+
+
+*************************************
+*AVERAGE sum of square errors -> mean((DF$var - ModelPredict)^2)
+
+average: mean(x) na.rm=TRUE
+
+
+
+	[[[[  Discrete Choice Models  ]]]]
+library(mlogit)
+
+1) mlogit.data: shape a data.frame in a suitable form for the use of the mlogit function
+
+mlogitDATA <- mlogit.data(df, shape = "long/wide", choice = "x1", alt.var = "x2", sep ="", varying = c(1:10))
+
+long: each row is alternative
+wide: each row is observation
+
+choice: variable indicating the choice made
+
+varying: the indexes of the variables that are alternative specific
+
+alt.var: variable that contains the alternative index (for a long data.frame only) or the name under which the alternative index will be stored (the default name is alt)
+
+sep: the seperator of the variable name and the alternative name (only relevant for a wide data.frame)
+
+2) mlogit: Estimation by maximum likelihood of the multinomial logit model, with alternative-specific and/or individual specific variables
+
+mlogit(df, Y~x1+x2+...) #normal mlogit
+rpar: vector whos names are the random parameters using specific distributions (see below)
+reflevel: the base level that all others are normalized to
+
+mlogit(Y~x1+x2+...-1, data=mlogitDATA, rpar=c(x1='n', x2='n', x3='n'), panel = TRUE, print.level=TRUE)
+
+/* This fits a mixed logit model where the coefficients are treated as random variables. This is captured with rpar(random parameters) argument where 'n' indicates it is modeled as a normal random variable, panel data captures the fact that we have multiple observations per individual. */
+> can use 'u' for unifrom, 'l' for lognormal, 't' for truncated normal
+
+update(df,flag="") 
+> used to change flag, for mlogit, eg rpar
+
+	[[[   Regression Subset   ]]]
+library(leaps)
+regsubsets: Model selection by exhaustive search, forward or backward stepwise, or sequential replacement
+regsubsets(Y~x1+x2+...,df)
+- nvmax: maximum size of subsets to examine (default = 8)
+- method: Use exhaustive search, forward selection, backward selection or sequential replacement to search (default is exhaustive)
+
+*applying summary() to the model allows you to extract data such as rsq.adjr2 etc see W4 prac Q4
+
+
+	[[[         LASSO          ]]]
+library(glmnet)
+x <- model.matrix(Y~., df)
+or
+x <- as.matrix(subset(df,select= -Y)) #dropping the Y terms cos we are looking at predictor vars
+y <- df$Y
+
+grid<-10^seq(10,-2, length=100) #set grid < this is for high to low
+
+##################################
+** make training & test set ** 
+
+trainid <- sample(1:nrow(df),0.8*nrow(df))    (if want 0.8,0.2 split) <<this is random sampling
+testid <- -trainid
+train<- DF[trainid,]
+test<- DF[testid,]
+
+##################################
+
+modellasso <- glmnet(X[trainid,],y[trainid],lambda=grid)
+plot(modellasso,xvar="lambda")
+
+ ** manual cross-val **
+#Predictions (cross validation to see which lambda is best)
+#evaluate the model on the test set
+predictlasso1 <- predict(modellasso,newx=X[test,],s=100) #s is the value of lambda
+mean((predictlasso1-y[test])^2) #SSE
+
+#however this is an interpolation of the data, to have the exact data need to have additional flags
+predictlasso1a <- predict(modellasso,newx=X[test,],s=100,exact=T,x=X[train,],y=y[train])
+mean((predictlasso1a-y[test])^2)
+
+ ** glmnet cross-val **
+#Cross-validation using glmnet
+set.seed(2)
+cvlasso <- cv.glmnet(x[trainid,],y[trainid])   #lambda=grid may help (default is NULL)
+cvlasso$glmnet.fit
+cvlasso$lambda.min //find best lambda
+
+plot(cvlasso$lambda,cvlasso$cvm)
+predictlassocv <- predict(modellasso,s=cvlasso$lambda.min,newx=x[testid,]) #use the best lambda for CV
+mean((predictlassocv -y[test])^2) #mean squared error
+
+
+Week 8
+	[[[[       CART      ]]]]
+#recursive partitioning library
+library(rpart)
+library(rpart.plot)    
+library(rattle)	      #optional	
+library(RColorBrewer) #optional
+
+########## IMPT: Are you doing classification (0/1) or regression (continuous var) #############
+################################################################################################
+
+cart1 <- rpart(data=train, Y~X1+x2, method = "?", cp=?)
+	#method  -> classification ="class" (only for classification trees)
+	 	-> regression = "anova" (default: for regression trees)
+	#cp (complexity parameter) -> 0.01 (default) > how many iterations should do until (see pruning)
+
+ ** tree visualization ** 
+plot(cart1); text(cart1)
+prp(cart1)  | prp(cart1,type=1) | fancyRpartPlot(cart1)  #nicer tree
+prp(model1,type=4,extra=2)
+
+ ** tree information **
+print(cart1)
+printcp(cart1)
+
+	> node), split, n, loss, yval, (yprob)
+     	 * denotes terminal node
+	>> split: splitting criterion
+	>> n:  	  # of obs in the node/leaf
+	>> loss:  # of obs misclassifed
+	>> yval:  predicted class 
+	>> yprob: coressponding prob
+	eg.  2) lctdir=liberal 205  82 0 (0.60000000 0.40000000) > for node lctdir=lib, there are 205 obs, predicted to go into child 0 with 0.6 prob, 82 obs misclassified for the prediction.
+
+	> the indentation shows the child-parent relationship
+
+
+
+ ** predictions **
+predictcart1 <- predict(cart1, newdata = test, type = "class")  << classifications of the predictions 0 or 1 
+predictcart1 <- predict(cart1, newdata = test) << For regression tree
+
+	### confusion matrix (row,column) 
+table(test$rev,predictcart1) 
+mean((predictcart1 -test$Y)^2) #mse
+
+	#AOC
+library(ROCR) 
+predictcart1_prob <- predict(cart1, newdata = test, type = "prob") << gives actual probablities of going to 0 or 1
+pred_cart1 <- prediction(predictcart1_prob[,2],test$Y) << compares the prob of getting 1 to the test data
+perf_cart1 <- performance(pred_cart1, x.measure='fpr',measure = 'tpr') << same as previous
+plot(perf_cart1)
+performance(pred_cart1,measure="auc") 
+
+
+ ** Pruning ** 
+printcp(cart1) << display the cp table for model 
+> cp = complexity parameter
+>> default value of cp chosen in cart is 0.01 (use prune to change)
+>> lower cp = less margin for error = more complex model (more splits, bigger tree) = lower error but higher var
+>> nsplit = number of decision branches (more = more complex)
+-> want to pick smallest xerror while having smallest xstd
+
+plotcp(cart1) << plot relation between cp and error
+
+#actual pruning
+if U is the cp with the lowest xerror,xtd pair in printcp(cart1)
+cart2 <- prune(cart2,cp=U)
+
+
+
+ ** Random Forest **
+library(randomForest)
+trainSmall <- train[sample(nrow(train), 2000), ] #(downsampling for largesizes)
+
+set.seed()
+forest_model <- randomForest(Y~. , data = trainSmall)
+	#Error: The response has five or fewer unique values.  Are you sure you want to do regression?
+	# Use as.factor(Y)~.
+	
+forest_model #to see how many variables at each split by default
+
+
+
+pred.forest <- predict(forest_model, newdata = test)  #maybe need type = "prob"
+table_forest <- table(test$Y, pred.forest)
+mean((pred.forest - test$Y)^2) #MSE
+
+ ** View variable metrics for forest **
+vu <- varUsed(forest_model, count= TRUE)                      #freq of variables used in the random forest
+vusorted <- sort(vu, decreasing = FALSE, index.return = TRUE) #sorts the fq
+dotchart(vusorted$x, names(forest_model$forest$xlevels[vusorted$ix])) #draws a cleveland dot plot
+
+varImpPlot(forest_model) #looking at impurity metric > want to find average reduction in impurity
+importance(forest_model) #see which variables are the most impt (higher = more impt)
+
+
+
+Week 9:
+[[      Text Analysis     ]]
+	# With the option stringsAsFactors=FALSE we make sure that character vectors are  NOT converted into factors.
+
+df <- read.csv("file.csv",stringsAsFactors=FALSE)
+str(df) #make sure there are no factors
+head(df) #see the text of first few entries
+summary(df) #summary of data
+	
+	#for super long texts use strwrap() -> see week9 part2
+strwrap(energy$email[1])
+
+ **  Step 1: Pre-Processing **
+library(tm) #text mining package
+library(SnowballC) # Porter's word stemming algorithm
+
+	# A corpus represents a collection of documents (tweets, in our case)
+	# The VectorSource helps interpret each element of the twitter$tweet object as a document, while the Corpus command helps represent it as a corpus.
+
+corpus_df <- Corpus(VectorSource(df$Y))
+corpus_df[[1]] #1st dataline
+as.character(corpus_df[[1]]) #text version
+
+	# With the function tm_map, we apply mappings (transformations) to the corpus. 
+	# There is a variety of transformations that we can apply
+	getTransformations()
+
+#### Step 1.1: Make lower case	
+corpus_df <- tm_map(corpus_df,content_transformer(tolower))
+
+#### Step 1.2: Remove stopword (they do not bring additional information, so its redundant to have them)
+	#list of stopwords in tm package
+	stopwords("english")
+
+#Remove general stopwards
+corpus_df <- tm_map(corpus_df,removeWords,stopwords("english"))
+
+#Remove common words (depends on dataset)
+corpus_df <- tm_map(corpus_df,removeWords,c(word1,word2,word3,...))
+
+#### Step 1.3: Remove Punctuations (maybe numbers too, see case)
+corpus_df <- tm_map(corpus_df,removePunctuation)
+corpus_df <- tm_map(corpus_df,removeNumbers)
+
+#### Step 1.4: Stem the words using Porter's Stemming algo
+corpus_df <- tm_map(corpus_df,stemDocument)
+
+#### Step 1.5: Create a document-term matrix from original corpus
+dtm <- DocumentTermMatrix(corpus_df) #dtm is the variable name
+ 
+inspect(dtm[1,]) #checking the items in the first document (call dtm to see #of documents)
+
+#### Step 1.6: Get frequency which terms appear
+findFreqTerms(dtm,lowfreq=50)
+	# We can also check the frequency of specific words
+	dtm[,"accid"]
+	dtm[,"awesom"]
+
+	# This part of the analysis is aimed to remove terms that do not appear frequently
+	# In this specific case, we remove all terms with at least 99.5% empty entries
+dtm <- removeSparseTerms(dtm,0.995)
+
+  **  Step 2: Mining the Document-Term matrix (dtm) + preparing it for model learning **
+library(wordcloud) #basic visualisation
+
+	# Transform the term-document matrix into a matrix and, then, into a dataframe
+DFsparse <- as.data.frame(as.matrix(dtm))
+str(DFsparse)
+colnames(DFsparse)
+	# This helps ensure that columns have valid names.  For example, names starting with numbers are modified (e.g., 300k -> X300k).
+colnames(DFsparse) <- make.names(colnames(DFsparse))
+
+	# Get word counts in decreasing order
+df_word_freqs = sort(colSums(DFsparse), decreasing=TRUE) 
+	# Create data frame with words and their frequencies
+dm = data.frame(word=names(df_word_freqs), freq=unname(df_word_freqs))
+	# Plot wordcloud
+wordcloud(dm$word, dm$freq, random.order=FALSE, colors=brewer.pal(8, "Dark2"))
+
+	### Last step, we add the output variable to the DFsparse dataframe
+DFsparse$Y = DF$Y
+	
+
+  **  Step 3: Predictions **
+library(caTools) #same as logistic regression
+set.seed(1)
+spl <- sample.split(DFsparse$Y,SplitRatio=0.7)
+train <- subset(DFsparse,spl==TRUE)
+test <- subset(DFsparse,spl==FALSE)
+
+#rmb predictions have 
+predict1 <- predict(newdata = test, model1,type="class") #for classification trees
+predict1 <- predict(newdata = test, model1) #for regression trees
+predict1 <- predict(newdata = test, model1,type="response") #for logistic regression
+
+
+  ** Naive Bayes Classifiers **
+	# Build model: computes the conditional a-posterior probabilities of a categorical class variable  given independent predictor variables using the Bayes rule.
+
+library(e1071)
+
+model <- naiveBayes(as.factor(Y)~. , data = train)
+model <- naiveBayes(Y~. , data = train) 
+
+summary(model)
+model$apriori
+model3$tables  # List tables for each predictor. For each numeric variable, it gives target class, mean and standard deviation.
+
+	#Prediction
+predict_model <- predict(model, newdata=test, type="class")
+table(predict_model,test$Y)
+
+
+
+Week 10:
+[[      Clustering     ]]
+  ** Hierarchical Clustering **
+distances = dist(df[,1:x], method = 'euclidean')
+cluster_dend = hclust(distances, method = "ward.D2")
+plot(cluster_dend)
+
+	#cutting the dendrogram
+clusterGroups = cutree(cluster_dend,k= #ofcluster)
+
+
+  ** K-means Clustering **
+	#Might need to scale data
+data_scaled <- data
+data_scaled$x1 <- scale(data$x1)
+...
+
+	#impt need to set seed bcos there is randomization process
+set.seed(1) 
+cluster_kmeans <- kmeans(data, centers=,nstart=)
+	#centers: how many clusters (or k) 
+	#nstart repeat this amt of time (~10) and pick the best option
+
+	#total sum of squares within all clusters (sum of the numbers stored in cluster_kmean)
+cluster_kmeans$tot.withinss
+
+	#vary k and plot the error in the cluster as a function of k
+set.seed(1)
+fit <- 0
+for(k in 1:15) {
+   cluster_kmeans <- kmeans(Data[,1:19], centers=k, nstart=20)
+   fit[k] <- cluster_kmeans $tot.withinss
+}
+plot(1:15,fit)
+
+	#when solving clustering problem, see if you need to normalize data 
+	#if data have different ranges of variablilities eg $ vs age
+
+cluster$centers
+cluster$clusters #can help with qns
+
+   ** Collaborative Filtering **
+
+1) Prepare data
+Data <- matrix(nrow=length(unique(df$item1)), ncol=length(unique(df$item2))) #create empty matrix
+rownames(Data) <- unique(df$item1)
+colnames(Data) <- unique(df$item2)
+
+for(i in 1:nrow(df)){
+   Data[as.character(df$item1[i]),as.character(df$item2[i])] <- df$df[i] #filling the matrix
+}
+	# Normalize the ratings of each user so that bias is reduced (na.rm=TRUE omitts the missing values)
+Datanorm <- Data - rowMeans(Data,na.rm=TRUE)
+
+	#split data: split the matrix into 4 submatrices (1 partition on each axis)
+set.seed(1)       
+spl1 <- sample(1:nrow(Data), 0.98*nrow(Data)) # spl1 has 98% of the rows
+spl1c <- setdiff(1:nrow(Data),spl1)           # spl1c has the remaining ones
+set.seed(2)
+spl2 <- sample(1:ncol(Data), 0.8*ncol(Data))  # spl2 has 80% of the columns
+spl2c <- setdiff(1:ncol(Data),spl2) 
+
+2) Models
+	# We create three different prediction models and corresponding predicted rating matrices
+	# First, we initialize the matrices for the three models
+Base1    <- matrix(nrow=length(spl1c), ncol=length(spl2c))
+Base2    <- matrix(nrow=length(spl1c), ncol=length(spl2c))
+UserPred <- matrix(nrow=length(spl1c), ncol=length(spl2c))
+
+	# Then, we make the predictions for models Base1 and Base2
+	# Base1: average out the item rating for all users in the training set (spl1) [average item rating]
+for(i in 1:length(spl1c)) {
+Base1[i,] <- colMeans(Data[spl1,spl2c], na.rm=TRUE)
+}
+Base1[,1:10] # All rows (users) contain the same information
+
+	# Base2: average over the user rating for all the items in the training set (spl2) [average user rating]
+for(j in 1:length(spl2c)){ 
+Base2[,j] <- rowMeans(Data[spl1c,spl2], na.rm=TRUE)
+}
+Base2[,1:10] # All columns (movies) contain the same information
+
+	# For the third model, we first need to calculate the correlation between users
+	# Initialize matrices
+Cor <- matrix(nrow=length(spl1),ncol=1) # keeps track of the correlation between users
+Order <- matrix(nrow=length(spl1c), ncol=length(spl1)) # sort users in term of decreasing correlations
+
+	# With this command, we create an Order matrix of dimensions 15x691, 
+	# where each row corresponds to neighbors of the users in the spl1c in decreasing order of Pearson correlation. 
+	# The NA accounts for users who have no common ratings of movies with the user.
+for(i in 1:length(spl1c)){
+  for(j in 1:length(spl1)){
+      Cor[j] <- cor(Data[spl1c[i],spl2],Data[spl1[j],spl2],use = "pairwise.complete.obs")
+      }
+  V <- order(Cor, decreasing=TRUE, na.last=NA)
+  Order[i,] <- c(V, rep(NA, times=length(spl1)-length(V)))
+}
+
+	# Now, we compute user predictions by looking at the 250 nearest neighbours 
+	# and averaging equally over all these user ratings in the items in spl2c
+for(i in 1:length(spl1c)){
+UserPred[i,] <- colMeans(Data[spl1[Order[i,1:250]],spl2c], na.rm=TRUE)
+}   
+
+3) Compare model performance
+# Calculate the model error
+RMSEBase1    <- sqrt(mean((Data[spl1c,spl2c] - Base1)^2, na.rm=TRUE))
+RMSEBase2    <- sqrt(mean((Data[spl1c,spl2c] - Base2)^2, na.rm=TRUE))
+RMSEUserPred <- sqrt(mean((Data[spl1c,spl2c] - UserPred)^2, na.rm=TRUE))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+cvlasso$nzero  (Shows number of non-zero coefficients)
+cvlasso$glmnet.fit (Shows the R-square errors for all tests 0-> whereever, check the %Dev)

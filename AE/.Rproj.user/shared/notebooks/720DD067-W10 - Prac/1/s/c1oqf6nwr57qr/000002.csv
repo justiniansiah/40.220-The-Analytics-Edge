@@ -1,0 +1,6 @@
+"0","citi <- read.csv(""citibike.csv"")"
+"0","length(unique(citi$startstation))"
+"1","[1]"
+"1"," 329"
+"1","
+"

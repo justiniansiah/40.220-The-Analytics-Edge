@@ -1,0 +1,8 @@
+"0","#A random forest model called spamRF"
+"0","library(randomForest)"
+"2","randomForest 4.6-14
+"
+"2","Type rfNews() to see new features/changes/bug fixes.
+"
+"0","set.seed(123)"
+"0","spamRF <- randomForest(spam~. , data = train)"

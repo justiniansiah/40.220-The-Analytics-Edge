@@ -1,0 +1,14 @@
+"0","library(mlogit)"
+"2","Loading required package: Formula
+"
+"2","Loading required package: maxLik
+"
+"2","Loading required package: miscTools
+"
+"2","
+Please cite the 'maxLik' package as:
+Henningsen, Arne and Toomet, Ott (2011). maxLik: A package for maximum likelihood estimation in R. Computational Statistics 26(3), 443-458. DOI 10.1007/s00180-010-0217-1.
+
+If you have questions, suggestions, or comments regarding the 'maxLik' package, please use a forum or 'tracker' at maxLik's R-Forge site:
+https://r-forge.r-project.org/projects/maxlik/
+"

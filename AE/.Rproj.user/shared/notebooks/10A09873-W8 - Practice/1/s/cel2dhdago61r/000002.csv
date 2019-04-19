@@ -1,0 +1,4 @@
+"0","library(ROCR)"
+"0","ROCR_PredictQ1 <- prediction(Q1predict, Q1test$over50k)"
+"0","perf1d <- performance(ROCR_PredictQ1, x.measure = ""fpr"", measure= ""tpr"")"
+"0","plot(perf1d)"

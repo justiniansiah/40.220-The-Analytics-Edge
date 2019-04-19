@@ -1,0 +1,227 @@
+---
+title: "R Notebook"
+output: r_notebook
+---
+
+1. In this exercise, you will study a technique called latent semantic indexing, which applies singular value decomposition to create a low dimensional representation of data that is designed to capture semantic similarity of words. 
+A list of all 460 unique words/terms that occurs in a set of 9 documents is provided in lsiWords.txt. 
+A document by term matrix is in lsiMatrix.txt.
+
+(a) Use the read.table() function to read in the data from the lsiMatrix.txt file. 
+
+Create a matrix X that is the transpose of the lsiMatrix, so that each column represents a document. 
+```{r}
+setwd("D:/School Stuff/40 .220 The Analytics Edge/W11/0) Prac")
+lsiMatrix <- read.table("lsiMatrix.txt")
+X <- as.matrix(t(lsiMatrix))
+
+```
+
+- Compute the singular value decomposition of X and make an approximation to it using the first 2 singular values and vectors. 
+```{r}
+s <- svd(X)
+
+X_hat = s$u[,1:2] %*% diag(s$d[1:2]) %*% t(s$v[,1:2])
+```
+
+- Plot the low dimensional representation of the 9 documents in two dimensions by using the right singular vectors. 
+```{r}
+plot(s$v[,1],s$v[,2])
+text(s$v[,1],s$v[,2],c(1:9),adj=2)
+```
+
+- Which two documents appear to be the closest to each other in this low dimensional representation?
+7 and 8 are the closest
+
+
+
+
+(b) Consider finding documents that are about alien abductions. 
+If you look at the words in lsiWords.txt, there are three versions of this word, 
+term 23 ("abducted"), terms 24 ("abduction"), term 25 ("abductions"). 
+Suppose you want to find documents containing the word "abducted", documents 2 and 3 contain it but document 1 does not. In the original dataset however document 1 is also related to the topic. Thus LSI should also find document 1. 
+
+
+- Create a test document q containing the one word "abducted" and project it into the 2D subspace to make q_hat. 
+```{r}
+str(X) # to see rows in X which is 460
+q <- matrix(0,nrow = 460, ncol= 1)
+q[23] <- 1 #term 23
+qhat <- solve(diag(s$d[1:2])) %*% t(s$u[,1:2]) %*% q
+str(qhat)
+```
+
+- Now compute the cosine similarity between q_hat and the low dimensional representation of all the documents. 
+```{r}
+cosine <- matrix(0,9,1)
+for (i in 1:9){
+  cosine[i] <- sum(qhat*s$v[i,1:2])/sqrt(sum(qhat^2)*sum(s$v[i,1:2]^2))
+}
+order(cosine,decreasing = T)
+
+```
+
+- What are the top 3 closest matches?
+1,3,2
+
+
+********************************************************************************************************
+********************************************************************************************************
+
+Question 2
+
+2. The data in the file mroz.csv includes data on hours worked for 753 married women. 
+The variables in the dataset include:
+ hours: Hours worked
+ kidslt6: Number of children less than six years old
+ kidsge6 Number of kids between 6 and 18 years of age
+ age: Age
+ educ: Years of education
+ exper: Past years of labor market experience
+ nwifeinc: Husband's earnings, measured in thousands of dollars
+
+(a) Quadratic functions are often used in labor economics to capture increasing or decreasing marginal rates. 
+- Start by defining a new variables exper2 which is defined as the square of the exper variable.
+
+```{r}
+mroz <- read.csv("mroz.csv")
+mroz$exper2 <- (mroz$exper)^2
+```
+
+- Run a linear regression on the hours worked using all the variables including exper2 and report on the R-squared and adjusted R-squared. 
+- Write down the fitted equation. 
+
+```{r}
+mrozmodel <- lm(data= mroz, hours~.)
+summary(mrozmodel)
+
+
+```
+Multiple R-squared:  0.2656,	Adjusted R-squared: 0.2587 
+hours =  1330.4824 + -442.0899*kidslt6 + -32.7792*kidsge6 + -30.5116*age + 28.7611*educ + 65.6725*exper + -3.4466*nwifinc + -0.7005*exper2
+
+
+- Does the result indicate that the exper2 variable is significant at the 5% level? 
+> Yes
+
+- Does the results indicate that experience has an increasing or diminishing marginal effect on wage?
+> diminishing marginal effect (exper^2 is -ve)
+
+
+(b) What is the range of fitted values for hours from the result in part (a)? 
+- How many of the fitted values are below 0? 
+- How many observations in the dataset have hours = 0? 
+- How do these two numbers compare?
+```{r}
+summary(mrozmodel$fitted.values)
+```
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ -719.8   417.5   737.7   740.6  1093.1  1614.7
+The range is -719.8 to 1614.7
+
+```{r}
+table(mrozmodel$fitted.values<0)
+```
+FALSE  TRUE 
+  714    39 
+39 are below 0
+
+```{r}
+table(mroz$hours==0)
+```
+FALSE  TRUE 
+  428   325 
+325 observations are hours = 0
+
+The observed values for hours = 0 is far larger than the fitted values for hours < 0
+
+
+(c) Estimate a Tobit model to predict hours using all the variables including exper2. 
+Compare the signs of the coeffcients with the results in part (a) and check if the results match?
+
+```{r}
+library(survival)
+mroztobit <- survreg(Surv(hours , hours > 0, type="left") ~. , data = mroz, dist="gaussian")
+
+summary(mroztobit)
+#mroztobit_pred <- predict(mroztobit,newdata=mroz)
+```
+In (a) the lm was hours =  1330.4824 + -442.0899*kidslt6 + -32.7792*kidsge6 + -30.5116*age + 28.7611*educ + 65.6725*exper + -3.4466*nwifinc + -0.7005*exper2
+Here the tobit model gives: hours =  965.3053 + -894.0217*kidslt6 + -16.2180*kidsge6 + -54.4050*age + 80.6456*educ + 131.5643*exper + -8.8142*nwifinc + -1.8642*exper2
+
+The signs match the lm in (a)
+
+
+
+(d) We will now compare the R-squared values from the results in part (a) and (c). Remember that for the linear regression model, the R-squared value is the squared correlation between the fitted values of hours and the actual value. 
+We now define the R-squared for a Tobit model in a similar manner. Given the estimated values of beta and the scale parameter sigma, the predicted mean value of the dependent variable is given as:
+
+E(y_i | x_i) = beta' * x_i * PHI(beta' * x_i/sigma) + sigma*phi(beta' * x_i/sigma)
+
+Compute this value for all observations (remember that the predict function in survreg only returns the beta'*x_i values). 
+- Now define the R-squared value by computing the correlation of these predicted value with the actual value of the hours. 
+- Compare the R-squared values of the two models and comment on which is preferred.
+
+```{r}
+#Multiple R-squared:  0.2656, in (a)
+(cor(mrozmodel$fitted.values,mroz$hours)^2) #0.2656245
+tobitpred <- predict(mroztobit,newdata = mroz)
+meanval = tobitpred*pnorm(tobitpred/mroztobit$scale) + mroztobit$scale*dnorm(tobitpred/mroztobit$scale)
+
+cor(meanval,mroz$hours)^2
+
+```
+(a) has rsquared value of 0.2656245
+while tobit's rsquared is 0.2742441
+
+the tobit model has a greater rsquared value so it is preferred. 
+>**However, it is to be noted that the Tobit model was not designed to maximise the R2 value (its objective is to maximise log-likelihood).**
+
+
+
+(e) We now compare the estimates from the two models as a function of education. Assume that all the variables other than educ are set at their mean values. 
+- Write down the linear equation that describes the average hours worked as a function of the education level from the linear regression model
+
+In (a) the lm was hours =  1330.4824 + -442.0899*kidslt6 + -32.7792*kidsge6 + -30.5116*age + 28.7611*educ + 65.6725*exper + -3.4466*nwifinc + -0.7005*exper2
+```{r}
+coeff <- mrozmodel$coefficients[1] + mrozmodel$coefficients[2]*mean(mroz$kidslt6) + mrozmodel$coefficients[3]*mean(mroz$kidsge6) + mrozmodel$coefficients[4]*mean(mroz$age) + mrozmodel$coefficients[6]*mean(mroz$exper) + mrozmodel$coefficients[7]*mean(mroz$nwifeinc) +
+mrozmodel$coefficients[8]*mean(mroz$exper2)
+coeff
+```
+E(hours) = 387.1927 + 28.7611*educ
+
+
+- What is the estimated value at 8 and 12 years of education from the linear regression model?
+
+```{r}
+coeff + mrozmodel$coefficients[5]*8
+coeff + mrozmodel$coefficients[5]*12
+```
+(Intercept) 
+   617.2817 
+(Intercept) 
+   732.3262 
+
+- Compare this with the estimated values from the Tobit model. 
+- Is there increasing or decreasing marginal effect of education on the hours worked in the Tobit model?
+```{r}
+coeff2 <- mroztobit$coefficients[1] + mroztobit$coefficients[2]*mean(mroz$kidslt6) + mroztobit$coefficients[3]*mean(mroz$kidsge6) + mroztobit$coefficients[4]*mean(mroz$age) + mroztobit$coefficients[6]*mean(mroz$exper) + mroztobit$coefficients[7]*mean(mroz$nwifeinc) +
+mroztobit$coefficients[8]*mean(mroz$exper2)
+
+pred8 <- coeff2 + mroztobit$coefficients[5]*8
+pred12 <- coeff2 + mroztobit$coefficients[5]*12
+
+pred8*pnorm(pred8/mroztobit$scale) + mroztobit$scale*dnorm(pred8/mroztobit$scale)
+pred12*pnorm(pred12/mroztobit$scale) + mroztobit$scale*dnorm(pred12/mroztobit$scale)
+```
+
+(Intercept) 
+   423.5725 
+(Intercept) 
+   597.6833 
+   
+The values from Tobit gives lower estimates of expected hours worked for these levels of education. The marginal effects are also increasing from education, on the hours worked.
+>Note that the difference bewteen the Tobit estimates is larger than that of the linear estimate.
+
+
+

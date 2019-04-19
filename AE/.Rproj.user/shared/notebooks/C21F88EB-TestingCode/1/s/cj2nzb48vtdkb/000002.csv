@@ -1,0 +1,5 @@
+"0","library(caTools)"
+"0","set.seed(1)"
+"0","fullglmsplit <- sample.split(dataset2$ATT_FLAG, SplitRatio = 0.7)"
+"0","fullglmtrain <- subset(dataset2, fullglmsplit == TRUE)"
+"0","fullglmtest <- subset(dataset2, fullglmsplit == FALSE)"

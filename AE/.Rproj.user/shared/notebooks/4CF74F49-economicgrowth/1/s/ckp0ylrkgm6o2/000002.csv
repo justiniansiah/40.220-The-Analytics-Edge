@@ -1,0 +1,3 @@
+"0","library(leaps)"
+"0","model1 <- regsubsets(y~.,data=eg1,nvmax=41)"
+"0","plot(summary(model1)$rsq)"

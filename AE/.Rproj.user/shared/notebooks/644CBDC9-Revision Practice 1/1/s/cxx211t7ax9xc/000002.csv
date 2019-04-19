@@ -1,0 +1,6 @@
+"0","mean(wine$price91[wine$hrain<mean(wine$hrain) & wine$tempdiff < mean(wine$tempdiff)])
+"
+"1","[1]"
+"1"," 72.86714"
+"1","
+"

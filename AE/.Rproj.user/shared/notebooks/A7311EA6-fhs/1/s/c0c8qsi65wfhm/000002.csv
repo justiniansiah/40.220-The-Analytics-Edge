@@ -1,0 +1,16 @@
+"0","```r
+library(ROCR)
+```"
+"1","Loading required package: gplots
+
+Attaching package: ã¤¼ã¸±gplotsã¤¼ã¸²
+
+The following object is masked from ã¤¼ã¸±package:statsã¤¼ã¸²:
+
+    lowess
+"
+"0","```r
+predict3 <- prediction(predict_test,test$TENCHD)
+perf3 <- performance(predict3,x.measure=\"fpr\",measure=\"tpr\")
+plot(perf3)
+```"

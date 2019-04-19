@@ -1,0 +1,7 @@
+"0","```r
+plot(winetrain$DEGREES,winetrain$HRAIN)
+abline(h=mean(winetrain$HRAIN))
+```"
+"0","```r
+abline(v=mean(winetrain$DEGREES))
+```"

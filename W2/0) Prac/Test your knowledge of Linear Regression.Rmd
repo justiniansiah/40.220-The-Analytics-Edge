@@ -1,0 +1,769 @@
+---
+title: "Test Knowledge on Linear Regression"
+output: html_notebook
+---
+
+Question 1
+```{r Read-data, message=FALSE, warning=FALSE, paged.print=FALSE, results='hide'}
+auto<- read.csv("Auto.csv")
+str(auto)
+```
+
+The dataset has the following felds:
+ mpg: miles per gallon
+ cylinders Number of cylinders
+ displacement: Engine displacement (cu. inches)
+ horsepower: Engine horsepower
+ acceleration: Time to accelerate from 0 to 60 mph (sec.)
+ year: Model year (modulo 100)
+ origin: Origin of car (1. American, 2. European, 3. Japanese)
+ name: Vehicle name
+
+
+(a) Perform a simple linear regression with mpg as the response and horsepower as the pre-
+dictor. Comment on why you need to change the horsepower variable before performing
+the regression.
+
+The horsepower variable is read in as a factor variable due to the
+presence of "?". You need to convert this to numeric as shown in the code, to make it a
+reasonable model.
+```{r}
+auto$horsepower <- as.numeric(as.character(auto$horsepower))
+lm1a <- lm(mpg~horsepower,data=auto)
+summary(lm1a)
+```
+
+
+(b) Comment on the output by answering the following questions:
+ Is there a strong relationship between the predictor and the response?
+Yes, there is low p0value and the level of significance is good.
+ Is the relationship between the predictor and the response positive or negative?
+negative. MPG = 39.9 - 0.157(Horsepower)
+
+
+(c) What is the predicted mpg associated with a horsepower of 98? What is the associ-
+ated 99% condence interval? Hint: You can check the predict.lm function on how the
+condence interval can be computed for predictions with R.
+```{r}
+predict(lm1a,newdata=data.frame(horsepower=98),interval=c("confidence"),level=.99)
+
+```
+The predicted mpg for horsepower of 98 is 24.46708 and the 99% confidence interval is [23.816,25.117].
+
+
+(d) Compute the correlation between the response and the predictor variable. How does this
+compare with the R2 value?
+
+```{r}
+cor(auto$mpg,auto$horsepower, use = "pairwise.complete.obs")
+cor(auto$mpg,auto$horsepower, use = "pairwise.complete.obs")^2
+```
+
+Code helps compute correlation while dropping observations where even one
+entry is missing. Squaring the correlation gives the R2 of the model.
+
+
+(e) Plot the response and the predictor. Also plot the least squares regression line.
+```{r}
+plot(auto$horsepower,auto$mpg)
+abline(lm1a)
+```
+
+
+(f) Use the following two commands in R to produce diagnostic plots of the linear regression fit:
+layout(matrix(1:4,2,2))
+plot(your model name)
+Comment on the Residuals vs Fitted plot and the Normal Q-Q plot and on any problems you might see with the fit.
+```{r}
+layout(matrix(1:4,2,2))
+plot(lm1a)
+```
+
+A good linear fit should see residuals randomly scattered. 
+In this model we see that the residuals decrease, and then increase as the number of fitted residuals increase. 
+The normal QQ plot also shows that the distribution of the residuals is not normal at the extreme values. 
+This indicates that the data might have evidence of some nonlinearities and outliers.
+
+
+****************************************************************************************************************************
+Question 2
+This question also uses the Auto Dataset (in Q1)
+
+(a) Produce a scatterplot matrix which includes all the variables in the dataset.
+
+```{r}
+pairs(auto)
+```
+
+(b) Compute a matrix of correlations between the variables using the function cor(). You need to exclude the name variables which is qualitative.
+
+```{r}
+auto1 <- subset(auto, select= -c(name))
+cor(auto1)
+```
+
+(c) Perform a multiple linear regression with mpg as the response and all other variables except name as the predictors. 
+Comment on the output by answering the following questions:
+ Is there a strong relationship between the predictors and the response?
+ Which predictors appear to have a statistically significant relationship to the response?
+ What does the coefficient for the year variable suggest?
+```{r}
+lm2c <- lm(mpg~.,data=auto1)
+summary(lm2c)
+```
+i) There is a strong relationship as seen with the very low P-value. The adjusted R-squared value is also higher than the lm just using HP.
+ii) displacement, weight, year, origin
+iii) The year heavily influences the mpg
+
+****************************************************************************************************************************
+Question 3
+This problem focusses on the multicollinearity problem with simulated data.
+
+(a) Perform the following commands in R:
+set.seed(1)
+x1 <􀀀 runif(100)
+x2 <􀀀 0.5*x1 + rnorm(100)/10
+y <􀀀 2 + 2*x1 + 0.3*x2 + rnorm(100)
+The last line corresponds to creating a linear model in which y is a function of x1 andx2. Write out the form of the linear model. What are the regression coefficients?
+
+```{r}
+set.seed(1)
+x1 <- runif(100)
+x2 <- 0.5*x1 +rnorm(100)/10
+y  <- 2 + 2*x1 + 0.3*x2 + rnorm(100)
+```
+
+y = 2 + 2x1 + 0.3x2  
+
+
+(b) What is the correlation between x1 and x2? Create a scatterplot displaying the relationship between the variables.
+
+```{r}
+cor(x1,x2)
+plot(x1,x2)
+```
+
+(c) Using the data, fit a least square regression to predict y using x1 and x2.
+ What are the estimated parameters of ^ b0, ^ b1 and ^ b2? How do these relate to the true b0, b1 and b2?
+ Can you reject the null hypothesis H0 : b1 = 0?
+ How about the null hypothesis H0 : b2 = 0?
+
+```{r}
+lm3c <- lm(y~x1+x2)
+summary(lm3c)
+```
+^b0 = 2.13, ^b1 = 1.43, ^b2 = 1.01 whereas true values are
+ b0 = 2   ,  b1 = 2   ,  b2 = 0.3
+ 
+ Reject b1=0 at the 0.05 significant level (see the *)
+ We cannot reject b2=0 at the 0.05 significant level
+ 
+ 
+ 
+(d) Now fit a least squares regression to predict y using only x1.
+ How does the estimated ^ b1 relate to the true b1?
+ Can you reject the null hypothesis H0 : b1 = 0?
+
+```{r}
+lm3d <- lm(y~x1)
+summary(lm3d)
+```
+
+^b1 = 1.97, whereas true values are
+ b1 = 2   , 
+ 
+ We can reject the null hypothesis that b1=0 at the 0.001 significance level
+
+
+(e) Now fit a least squares regression to predict y using only x2.
+ How does the estimated ^ b2 relate to the true b2?
+ Can you reject the null hypothesis H0 : b2 = 0?
+```{r}
+lm3e <- lm(y~x2)
+summary(lm3e)
+```
+
+^b2 = 2.89, whereas true values are
+ b2 = 0.3   , 
+ 
+ We can reject the null hypothesis that b1=0 at the 0.001 significance level, however the predicted ^b2 is very far off from the actual b2
+
+
+
+(f) Provide an explanation on the results in parts (c)-(e).
+There is multicollinearity in the data between x1 and x2. In doing multiple regression we see this effect where it is 
+diffcult to reject H0 : bi = 0 (for one of the coefficients), while we see that with a single regression (with one variable), we can reject
+H0 : bi = 0. This is caused by multicollinearity.
+
+
+****************************************************************************************************************************
+Question 4
+
+This problem involves the Boston dataset.
+ crim: per capita crime rate by town
+ zn: proportion of residential land zoned for lots over 25,000 sq.ft
+ indus: proportion of non-retail business acres per town
+ chas: Charles River dummy variable (= 1 if tract bounds river; 0 otherwise)
+ nox: nitrogen oxides concentration (parts per 10 million)
+ rm: average number of rooms per dwelling
+ age: proportion of owner-occupied units built prior to 1940
+ dis: weighted mean of distances to ve Boston employment centres
+ rad: index of accessibility to radial highways
+ tax: full-value property-tax rate per $10,000
+ ptratio: pupil-teacher ratio by town
+ black: 1000(Bk 􀀀 0:63)2 where Bk is the proportion of blacks by town
+ lstat: lower status of the population (percent)
+ medv: median value of owner-occupied homes in $1000s
+
+```{r}
+boston <- read.csv("Boston.csv")
+str(boston)
+```
+
+(a) For each predictor, fit a simple linear regression model using a single variable to predict
+the response. In which of these models is there a statistically signicant relationship
+between the predictor and the response? Plot the figure of relationship between medv
+and lstat as an example to validate your finding.
+
+
+```{r}
+lm4a1 <- lm(medv~crim, data=boston)
+lm4a2 <- lm(medv~zn, data=boston)
+lm4a3 <- lm(medv~indus, data=boston)
+lm4a4 <- lm(medv~chas, data=boston)
+lm4a5 <- lm(medv~nox, data=boston)
+lm4a6 <- lm(medv~rm, data=boston)
+lm4a7 <- lm(medv~age, data=boston)
+lm4a8 <- lm(medv~dis, data=boston)
+lm4a9 <- lm(medv~rad, data=boston)
+lm4a10 <- lm(medv~tax, data=boston)
+lm4a11 <- lm(medv~ptratio, data=boston)
+lm4a12 <- lm(medv~black, data=boston)
+lm4a13 <- lm(medv~lstat, data=boston)
+
+plot(boston$medv,boston$lstat)
+abline(lm4a13)
+```
+
+
+(b) Fit a multiple linear regression models to predict your response using all the predictors.
+Compare the adjusted R2 from this model with the simple regression model. For which
+predictors, can we reject the null hypothesis H0 : bj = 0?
+
+```{r}
+lm4b <- lm(medv~.,data= boston)
+summary(lm4b)
+```
+we can reject H0 : bj = 0 for 
+crim , zn, chas, nox, rm,dis,rad,tax,ptratio,black,lstat at the 0.05 significance level
+
+
+
+(c) Create a plot displaying the univariate regression coefficients from (a) on the X-axis and
+the multiple regression coefficients from (b) on the Y-axis. That is each predictor is displayed as a single point in the plot. Comment on this plot.
+```{r}
+x <- c(lm4a1$coefficients[2],lm4a2$coefficients[2],lm4a3$coefficients[2],lm4a4$coefficients[2],lm4a5$coefficients[2],lm4a6$coefficients[2],lm4a7$coefficients[2],lm4a8$coefficients[2],lm4a9$coefficients[2],lm4a10$coefficients[2],lm4a11$coefficients[2],lm4a12$coefficients[2],lm4a13$coefficients[2])
+
+y <- c(lm4b$coefficients[2:14])
+plot(y=y,x=x)
+```
+
+The figure seems to indicate a fairly positive relationship between the results from the simple and multiple linear regression models. The relationship seems to be linear too.
+
+
+
+(d) In this question, we will check if there is evidence of non-linear association between the lstat predictor variable and the response? 
+To answer the question, fit a model of the form
+medv = b0 + b1lstat + b2lstat^2 + e:
+You can make use of the poly() function in R. Does this help improve the fit?
+Add higher degree polynomial fits. What is the degree of the polynomial fitt beyond which the terms no longer remain significant?
+
+```{r}
+lm4d <- lm(medv~lstat+poly(lstat,5,raw=TRUE),data=boston)
+summary(lm4d)
+```
+Yes, adding higher-degree terms helps improve the fit. Beyond degree 5, adding additional terms does not keep the terms significant.
+
+
+****************************************************************************************************************************
+Question 5
+
+The fille climate change.csv contains climate
+data from May 1983 to December 2008. The available variables include:
+ Year: Observation year
+ Month: Observation month
+ Temp: Difference in degrees Celsius between the average global temperature in that period and a reference value. 
+ CO2, N2O, CH4, CFC.11, CFC.12: Atmospheric concentrations of CO2, N2O, CH4, CCl3F (CFC-11) and CCl2F2 (CFC-12)
+ Aerosols: Mean stratospheric aerosol optical depth at 550 nm. This variable is linked to volcanoes, as volcanic eruptions result in new particles being added to the atmosphere.
+ TSI: Total solar irradiance (TSI) in W/m2 (the rate at which the sun's energy is deposited per unit area). 
+ MEI: Multivariate El Nino Southern Oscillation index (MEI), a measure of the strength of the El Nino/La Nina-Southern Oscillation
+
+
+
+(a) We are interested in how changes in these variables aect future temperatures, as well as how well these variables explain temperature changes so far. 
+- Read the dataset climate change.csv into R. 
+- Then, split the data into a training set, consisting of all the observations up to and including 2006, 
+- and a testing set consisting of the remaining years.
+- Build a linear regression model to predict the dependent variable Temp, using MEI, CO2, CH4, N2O, CFC.11, CFC.12, TSI and Aerosols as independent variables (Year and Month should not be used in the model). 
+
+Use the training set to build the model. What is the model R2?
+
+```{r}
+climate <- read.csv("climate_change.csv")
+str(climate)
+
+climateT <- subset(climate,climate$Year <= 2006)
+climateTest <- subset(climate,climate$Year > 2006)
+
+lm5a <- lm(Temp~MEI+CO2+CH4+N2O+CFC.11+CFC.12+TSI+Aerosols,data=climateT)
+summary(lm5a)
+```
+Multiple R-squared = 0.7509
+
+
+(b) Which variables are significant in the model? We will consider a variable significant in this example only if the p-value is below 0.05.
+The variables which are significant at the 0.05 significance level are MEI, CO2,CFC.11,CFC.12,TSi and Aerosols
+
+
+(c) Current scientific opinion is that N2O and CFC-11 are greenhouse gases However, the regression coefficients of both the N2O and CFC-11 variables are negative, indicating that increasing atmospheric concentrations of either of these two compoundsis associated with lower global temperatures. 
+Compute the correlations in the training set. Which of the following is the simplest correct explanation for this contradiction?
+ Climate scientists are wrong that N2O and CFC-11 are greenhouse gases - this regression analysis constitutes part of a disproof.
+ There is not enough data, so the regression coefficients being estimated are not accurate.
+ All of the gas concentration variables reflect human development - N2O and CFC.11 are correlated with other variables in the data set.
+```{r}
+cor(climateT)
+```
+N2O is highly correlated toCo2, CH4, CFC.12, temp and quite correlated to CFC.11
+CFC.11 is fairly positively correlated with CO2, N2O and strongly correlated with CH4, CFC.12.
+The results seem to indicate that all the gas concentration variables reflect human development and the variables are correlated in the dataset.
+
+
+
+(d) Given that the correlations are so high, let us focus on the N2O variable and build a model with only MEI, TSI, Aerosols and N2O as independent variables.Remember to use the training set to build the model. 
+- What is the coefficient of N2O in this reduced model? 
+- How does this compare to the coefficient in the previous model with all of the variables? 
+- What is the model R2?
+```{r}
+lm5d <- lm(Temp~MEI+TSI+Aerosols+N2O,data=climateT)
+summary(lm5d)
+```
+
+The coefficient for N2O in this reduced model is 0.0253. The variable is also very significant as compared to the model with all variables in it. By comparing the R2 and adjusted R2, we also see the model does not lose a lot of explanatory power while variables are reduced. This is typical of models where the independent variables are highly correlated with each other.
+
+
+
+(e) We have many variables in this problem, and as we have seen above, dropping some from the model does not decrease model quality. R provides a function step(), that will automate the procedure of trying different combinations of variables to find a good compromise of model simplicity and R2. This trade-off is formalized by the Akaike information criterion (AIC) - it can be informally thought of as the quality of the model with
+a penalty for the number of variables in the model. 
+The step function has one argument- the name of the initial model. It returns a simplified model. 
+- Use the step function in R to derive a new model, with the full model as the initial model. 
+- What is the R2 value of the model produced by the step function? 
+- Which of the variable(s) are eliminated from the full model by the step function? 
+
+It is interesting to note that the step function does not address the collinearity of the variables, except that adding highly correlated
+variables will not improve the R2 significantly. The consequence of this is that the step function will not necessarily produce a very interpretable model - just a model that has balanced quality and simplicity for a particular weighting of quality and simplicity (AIC).
+
+```{r}
+lm5e <- step(lm5a)
+summary(lm5e)
+```
+
+The multiple r-squared is 0.7508 which is slightly lower than the full model, but the adjusted R-Square is 0.7445 which is higher.
+CH4 is not used so this model got a fit which is just a good but with lesser predictor values.
+
+
+We have developed an understanding of how well we can fit a linear regression to thetraining data, but does the model quality hold when applied to unseen data? 
+- Using the model produced from the step function, calculate temperature predictions for the testing data set, using the predict function. 
+- What is the test R2?
+
+```{r}
+pred <- predict(lm5e,newdata=climateTest)
+summary(pred)
+
+sse <- sum((climateTest$Temp-pred)^2)
+sst <- sum((climateTest$Temp-mean(climateT$Temp))^2)
+testR2 <- 1-sse/sst
+testR2
+```
+The Test R^2 value is 0.628. With the full model, we get 0.6274
+
+
+****************************************************************************************************************************
+Question 6
+
+The data is provided in the file winedata.csv. The dataset contains the following variables:
+ vintage: Year the wine was made
+ price91: 1991 auction prices for the wine in dollars
+ price92: 1992 auction prices for the wine in dollars
+ temp: Average temperature during the growing season in degree Celsius
+ hrain: Total harvest rain in mm
+ wrain: Total winter rain in mm
+ tempdiff: Sum of the difference between the maximum and minimum temperatures during the growing season in degree Celsius
+
+```{r}
+wine <- read.csv("winedata.csv")
+str(wine)
+```
+
+(a) Define two new variables age91 and age92 that captures the age of the wine (in years) at the time of the auctions. 
+For example, a 1961 wine would have an age of 30 at the auction in 1991. 
+- What is the average price of wines that were 15 years or older at the time of the 1991 auction?
+
+```{r}
+wine$age91 <- 1991 - wine$vintage
+wine$age92 <- 1992 - wine$vintage
+str(wine)
+
+mean(subset(wine$price91,wine$age91>=15))
+```
+The average price of wine that were 15 years or older at the 1991 auction is $96.435.
+
+
+(b) What is the average price of the wines in the 1991 auction that were produced in years when both the harvest rain was below average and the temperature difference was below average?
+
+```{r}
+HRAvg <- mean(wine$hrain)
+TDAvg <- mean(wine$tempdiff)
+Q6B <- subset(wine,wine$hrain<HRAvg & wine$tempdiff<TDAvg)
+mean(Q6B$price91)
+```
+The average price in 1991 when harvest rain and temperature difference were below average is $72.867.
+
+
+(c) In this question, you will develop a simple linear regression model to fit the log of the price at which the wine was auctioned in 1991 with the age of the wine. 
+To fit the model,use a training set with data for the wines up to (and including) the year 1981. 
+- What is the R-squared for this model?
+
+```{r}
+Q6cTrain <- subset(wine,wine$vintage <= 1981)
+Q6cTest <- subset(wine,wine$vintage > 1981)
+
+lm6c <- lm(log(price91)~age91,data=Q6cTrain)
+summary(lm6c)
+```
+
+The R-Squared value for this model is 0.6675.
+
+
+(d) Find the 99% confidence interval for the estimated coefficients from the regression.
+
+```{r}
+confint(lm6c,level=0.99)
+```
+
+For intercept (b0): [3:159; 3:98].
+For age91 (b1): [0:022; 0:062].
+
+
+(e) Use the model to predict the log of prices for wines made from 1982 onwards and auctioned in 1991. What is the test R-squared?
+
+```{r}
+predicttest <- predict(lm6c,newdata=Q6cTest)
+sse<-sum((log(Q6cTest$price91)-predicttest)^2)
+sst<-sum((log(Q6cTest$price91)-mean(log(Q6cTrain$price91)))^2)
+testR2<- 1-sse/sst
+testR2
+```
+The test R-Squared Value is 0.9213742
+
+
+
+(f) Which among the following options describes best the quality of fit of the model for this dataset in comparison with the Bordeaux wine dataset that was analyzed by Orley Ashenfelter?
+ The result indicates that the variation of the prices of the wines in this dataset is explained much less by the age of the wine in comparison to Bordeaux wines.
+ The result indicates that the variation of the prices of the wines in this dataset is explained much more by the age of the wine in comparison to Bordeaux wines.
+ The age of the wine has no predictive power on the wine prices in both the datasets.
+
+
+
+In comparison to the results for the Bordeaux wine data, the trainint (model) R2 and test R2 is higher for this new dataset. 
+This seems to indicate that the variation in the prices of the wine in the dataset is explained much more by the age of the wines in comparison to the Bordeaux dataset.
+
+
+
+
+
+(g) Construct a multiple regression model to fit the log of the price at which the wine was auctioned in 1991 with all the possible predictors (age91, temp, hrain, wrain, tempdiff) in the training dataset. 
+- To fit your model, use the data for wines made up to (and including) the year 1981. 
+- What is the R-squared for the model?
+
+```{r}
+Q6cTrain <- subset(wine,wine$vintage <= 1981)
+Q6cTest <- subset(wine,wine$vintage > 1981)
+
+lm6g <- lm(log(price91)~age91+tempdiff+wrain+hrain+temp,data = Q6cTrain)
+summary(lm6g)
+```
+R-Squared Value for this model = 0.7938
+
+
+
+(h) Is this model preferred to the model with only the age variable as a predictor (use the adjusted R-squared for the model to decide on this)?
+With only the age variable, adjusted R2 = 0.65. 
+With all the variables, adjusted R2 = 0.7145. 
+This seems to indicate that the latter model (with more variables included) is preferred.
+
+
+
+
+(i) Which among the following best describes the output from the fitted model?
+ The result indicates that less the temperature, the better is the price and quality of the wine
+ The result indicates that greater the temperature difference, the better is the price and quality of wine.
+ The result indicates that lesser the harvest rain, the better is the price and quality of the wine.
+ The result indicates that winter rain is a very important variable in the fitt of the data.
+
+
+The result indicates that the lesser the harvest rain, the better the price and quality of the wine will be. 
+This is because the corresponding b = 0.002 and is significcant at the 0.1 level. 
+All other statements appear to be false.
+
+
+(j) Of the five variables (age91, temp, hrain, wrain, tempdi), drop the two variables that are the least significant from the results in (g). Rerun the linear regression and write down your fitted model.
+
+```{r}
+lm6j <- lm(log(price91)~age91+hrain+temp,data = Q6cTrain)
+summary(lm6j)
+```
+The least significant variables are wrain and tempdiff with p-values 0.53 and 0.416 respectively.
+
+
+
+(k) Is this model preferred to the model with all variables as predictors (use the adjusted R-squared in the training set to decide on this)?
+In the training set, adjusted R2 for this model is 0.73 
+while for model2, adjsuted R2 = 0:7145. 
+In this case, the new model3 is preferred to model2.
+
+
+
+
+(l) Using the variables identified in (j), construct a multiple regression model to fit the log of the price at which the wine was auctioned in  1992 (remember to use age92 instead of age91). 
+- To fit your model, use the data for wines made up to (and including) the year 1981. 
+- What is the R-squared for the model?
+
+```{r}
+lm6l <- lm(log(price92)~age92+hrain+temp,data = Q6cTrain)
+summary(lm6l)
+```
+
+
+
+`R2 for this model is 0.5834``{
+
+(m) Suppose in this application, we assume that a variable is statistically significant at the 0.2 level. 
+- Would you would reject the hypothesis that the coefficient for the variable hrain is nonzero?
+
+The p-value for hrain is 0.32. Hence we canot reject the null hypothesis that the b coefficient for hrain is zero.
+
+
+
+(n) By separately estimating the equations for the wine prices for each auction, we can better establish the credibility of the explanatory variables because:
+ We have more data to fit our models with.
+ The effect of the weather variables and age of the wine (sign of the estimated coefficients) can be checked for consistency across years.
+ 1991 and 1992 are the markets when the Australian wines were traded heavily.
+Select the best option.
+
+
+The best explanation seems to be that we can check for consistency of the effect of weather variables and age by looking at the sign of the estimated coefficients.
+
+
+o) The current fit of the linear regression using the weather variables drops all observations where any of the entries are missing. 
+- Provide a short explanation on when this might not be a reasonable approach to use.
+
+Clearly, dropping missing entries is reliable. However, if there are many missing entries, then this implies we can lose a lot of data.
+
+
+****************************************************************************************************************************
+Question 7
+
+The data is provided in the file batters.csv and contains the following variables:
+ playerID: Player identity code
+ yearID: Year
+ teamID: Team identity code
+ G: Number of games in which the player played during the season
+ AB: At Bats
+ R: Runs
+ H: Hits (Times reached base because of a batted, fair ball without error by the defense)
+ X2B: Doubles (Hits on which the batter reached second base safely)
+ X3B: Triples (Hits on which the batter reached third base safely)
+ HR: Homeruns
+ BB: Base on balls
+ HBP: Hit by pitch
+ SF: Sacrifice flies
+ salary: Salary for players at the start of the next season
+
+
+(a) Read the data into the dataframe batters. 
+- Which player made the most salary in the 2006 season?
+
+```{r}
+batters <- read.csv("batters.csv")
+summary(batters)
+maxsal <-max(batters$salary)
+
+maxsalrow <- which.max(batters$salary)
+batters$playerID[maxsalrow]
+```
+
+
+(b) What is the ratio of the maximum salary to the minimum salary among all players in the 2006 season?
+
+```{r}
+S2006 <- subset(batters,batters$yearID == 2006)
+max(S2006$salary)/min(S2006$salary)
+```
+
+Ratio is 61.65
+
+
+
+
+(c) At the end of the 1996 season, which teams had the set of batters with the minimum and maximum total sum of salaries respectively?
+(d) Write down the R command(s) that you used to answer question (c).
+
+```{r}
+sort(tapply(batters$salary[batters$yearID==1996],batters$teamID[batters$yearID==1996],sum))
+```
+OAK (Oakland Athletics) had the smallest payroll while NYA (New York Yankees) had the highest payroll.
+
+
+
+(e) Plot the histogram of the salary variable. What best describes the distribution of player salaries?
+ Most of the salaries are large, with a relatively small number of much smaller salaries
+(this is referred to as \left-skewed").
+ The salaries are balanced, with equal numbers of unusually large and unusually small
+salaries.
+ Most of the salaries are small, with a relatively small number of much larger salaries
+(this is referred to as \right-skewed")
+
+```{r}
+#library(ggplot2)
+#ggplot(batters, aes(batters$salary))+geom_histogram()
+
+hist(batters$salary)
+```
+
+Most of the salaries are small with a relatively small number of much larger salaries (right-skewed).
+
+
+
+(f) When handling a skewed dependent variable, it is often useful to predict the logarithm of the dependent variable instead of the dependent variable itself - this prevents the small number of unusually large or small observations from having an undue influence on the predictive model. In this problem, you will predict the natural logarithm of the salary variable at the end of a season with the number of runs scored in the season and a constant (intercept). 
+- Use the entire dataset to build your model with linear regression. 
+- What does your model predict to be the logarithm of the salary of a batter who scores 0 runs in a season?
+
+
+```{r}
+lm7f <- lm(data=batters,log(salary)~R)
+summary (lm7f)
+```
+
+log(salary) = 0.014991 R + 13,417505
+When R = 0; log (salary) = 13:41.
+
+
+
+(g) What is the actual average of the logarithm of the salary of batters who score 0 runs in a season in the dataset? 
+- Remember to drop missing entries in computing this number.
+
+```{r}
+#tapply(log(batters$salary),batters$R==0,mean)
+mean(log(batters$salary[batters$R==0]),na.rm=TRUE)
+```
+The actual average in the dataset with R = 0 or the logarithm of salary is 13.60.
+
+
+(h) Comment on whether the results in questions (f) and (g) are close to each other. If yes, provide a brief explanation.
+The values are close. Note that if you only regress log (salary) with a constant, the best fit would be the mean, which is the reason for this result.
+
+
+(i) Assume that the number of runs scored by a player increases by 1. 
+Suppose b1 is the coefficient of the number of runs scored in question (f). 
+What best describes how your model would predict the change in the salary?
+ New salary = Old salary + e^b1
+ New salary = Old salary  e^b1
+ New salary = Old salary + b1
+ New salary = Old salary  b1
+
+If runs increases by 1, we have New salary = Old salary  e^b1 .
+
+
+(j) We will now compare the effect of two baseball statistics on the salaries of the players.
+To do this, we need to define two new variables OBP (on-base percentage) and SLG (slugging percentage) as follows:
+- OBP = (H + BB + HBP) / (AB + BB + HBP + SF)
+- SLG = (H + X2B + 2  X3B + 3  HR)/ (AB)
+
+```{r}
+batters$OBP <- (batters$H + batters$BB + batters$HBP) / (batters$AB + batters$BB + batters$HBP + batters$SF)
+batters$SLG <- (batters$H + batters$X2B+2 * batters$X3B+3 * batters$HR) / (batters$AB)
+
+mean(batters$OBP[batters$yearID==2006],na.rm=TRUE)
+```
+The average on-base percentage in the 2006 season was 0.2707.
+
+
+
+
+(k) Perform a two sided t-test to check if the average slugging percentage in the 1996 and 2006 seasons are different. 
+What is the p-value of the test and your conclusion?
+```{r}
+t.test(batters$SLG[batters$yearID==1996],batters$SLG[batters$yearID==2006])
+
+```
+p-value of test is 0.4045, which seems to indicate that there is not enough evidence to reject the null hypothesis that the average slugging percentage of the 1996 and 2006 seasons are the same.
+
+
+
+(l) We will now use linear regression to predict the logarithm of the salary using the OBP and SLG variables and the constant (intercept). 
+To build the model, we will consider only batters with at least 130 at-bats, since this is required to qualify as honors for rookie of the year and helps provide an objective cutoff to check the effect of performance on players with relatively large sample of at-bats. 
+- Using only data for the year 1996, what is adjusted R-squared for your model?
+
+```{r}
+lm7ldata <- subset(batters,batters$yearID == 1996 & batters$AB >= 130)
+lm7l <- lm(data=lm7ldata, log(salary)~OBP+SLG)
+summary(lm7l)
+```
+Adjusted R2 = 0:2589.
+
+
+
+(m) Is there evidence that you can reject the three null hypothesis H0 : bj = 0 for the OBP, SLG and constant variables? 
+Use a p-value of 0.05 to make your conclusion.
+
+Since all the p-values are very close to zero, there is enough evidence to indicate that we can reject each of the null hypotheses that bj = 0.
+
+
+(n) Redo the linear regression from question (l) using only data for 2006. 
+What is the adjusted R-squared for your model?
+
+
+```{r}
+lm7ndata <- subset(batters,batters$yearID == 2006 & batters$AB >= 130)
+lm7n <- lm(data=lm7ndata, log(salary)~OBP+SLG)
+summary(lm7n)
+```
+Adjusted R2 = 0.1164.
+
+
+
+
+(o) Billy Beane, the Oakland Athletics coach believed that on-base percentage was much more important than the slugging percentage to help win a game. By looking at the coeffcients of the OBP and SLG variables from the regressions in questions (l) and (n), we can conclude that:
+ The market undervalued the SLG statistic relative to the OBP statistic in 1996 before Moneyball was published. This inefficiency still remained in 2006.
+ The market undervalued the SLG statistic relative to the OBP statistic in 1996 before Moneyball was published. This has been corrected in 2006.
+ The market undervalued the OBP statistic relative to the SLG statistic in 1996 before Moneyball was published. This inefficiency still remained in 2006.
+ The market undervalued the OBP statistic relative to the SLG statistic in 1996 before Moneyball was published. This has been corrected in 2006.
+Select the best option.
+
+
+
+In model 2 (1996), we have b(OBP) = 4.87; b(SLG) = 5.46. 
+In model 3 (2006), we have b(OBP) = 6.64; b(SLG) = 2:90. 
+In both models, both of the variables are statistically significant.
+The market undervalued OBP compared to SLG in 1996 (4:87 < 5:46) before Moneyball was published. 
+This has been corrected since in 2006 (6:64 > 2:90).
+
+
+
+
+
+
+
+
+
+

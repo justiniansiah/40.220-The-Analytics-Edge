@@ -1,0 +1,1 @@
+{"frames":[{"character_number":0,"end_character_number":0,"end_line_number":0,"file":"","func":"predict(newdata = test, model1, type = \"response\")","line_number":0}],"message":"Error in predict(newdata = test, model1, type = \"response\") : \n  object 'model1' not found\n"}

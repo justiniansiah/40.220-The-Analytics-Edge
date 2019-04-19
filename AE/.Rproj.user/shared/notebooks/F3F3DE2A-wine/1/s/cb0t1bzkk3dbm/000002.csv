@@ -1,0 +1,24 @@
+"0","```r
+model5  <- lm(LPRICE~DEGREES+HRAIN,data=winetrain)
+summary(model5)
+```"
+"1","
+Call:
+lm(formula = LPRICE ~ DEGREES + HRAIN, data = winetrain)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.88319 -0.19599  0.06181  0.15379  0.59724 
+
+Coefficients:
+             Estimate Std. Error t value Pr(>|t|)    
+(Intercept) -10.69628    1.85444  -5.768 8.40e-06 ***
+DEGREES       0.60261    0.11128   5.415 1.94e-05 ***
+HRAIN        -0.00457    0.00101  -4.525 0.000167 ***
+---
+Signif. codes:  0 â€˜***â€™ 0.001 â€˜**â€™ 0.01 â€˜*â€™ 0.05 â€˜.â€™ 0.1 â€˜ â€™ 1
+
+Residual standard error: 0.3674 on 22 degrees of freedom
+Multiple R-squared:  0.7074,	Adjusted R-squared:  0.6808 
+F-statistic: 26.59 on 2 and 22 DF,  p-value: 1.348e-06
+"

@@ -1,0 +1,4 @@
+"0","limitedTrain <- stocksTrain"
+"0","limitedTrain$PositiveDec <- NULL"
+"0","limitedTest <- stocksTest"
+"0","limitedTest$PositiveDec <- NULL"

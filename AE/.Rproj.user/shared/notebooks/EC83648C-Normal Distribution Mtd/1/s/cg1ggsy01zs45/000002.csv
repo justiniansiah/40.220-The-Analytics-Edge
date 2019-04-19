@@ -1,0 +1,5 @@
+"0","F1calc <- function(TP,FP,FN){"
+"0","  p = TP/ (TP+FP)"
+"0","  r = TP/ (TP+FN)"
+"0","  return((2*p*r)/(p+r))"
+"0","}"

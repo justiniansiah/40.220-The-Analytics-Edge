@@ -1,0 +1,10 @@
+"0","tapply(limited$Info.On.Internet,limited$Smartphone,mean)
+"
+"1","       0 "
+"1","       1 "
+"1","
+"
+"1","2.922807 "
+"1","4.367556 "
+"1","
+"

@@ -1,0 +1,23 @@
+"0","```r
+summary(model1)
+
+```"
+"1","
+Call:
+lm(formula = baseball2002$W ~ baseball2002$RD)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-10.4749  -2.2087   0.3369   2.3860   8.1203 
+
+Coefficients:
+                 Estimate Std. Error t value Pr(>|t|)    
+(Intercept)     80.922222   0.374248  216.23   <2e-16 ***
+baseball2002$RD  0.099190   0.003323   29.85   <2e-16 ***
+---
+Signif. codes:  0 â€˜***â€™ 0.001 â€˜**â€™ 0.01 â€˜*â€™ 0.05 â€˜.â€™ 0.1 â€˜ â€™ 1
+
+Residual standard error: 3.55 on 88 degrees of freedom
+Multiple R-squared:  0.9101,	Adjusted R-squared:  0.9091 
+F-statistic:   891 on 1 and 88 DF,  p-value: < 2.2e-16
+"

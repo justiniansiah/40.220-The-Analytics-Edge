@@ -1,0 +1,44 @@
+"0","table_P <- table(predictlog > 0.5, train$spam)"
+"0","table_P"
+"1","       
+"
+"1","       "
+"1","    0"
+"1","    1"
+"1","
+  FALSE"
+"1"," 3052"
+"1","    4"
+"1","
+  TRUE "
+"1","    0"
+"1","  954"
+"1","
+"
+"0","sum(diag(table_P)/sum(table_P))"
+"1","[1]"
+"1"," 0.9990025"
+"1","
+"
+"0","library(ROCR)"
+"2","Loading required package: gplots
+"
+"2","
+Attaching package: ‘gplots’
+
+"
+"2","The following object is masked from ‘package:stats’:
+
+    lowess
+
+"
+"0","ROCR_Predict_log <- prediction(predictlog, train$spam)"
+"0","performance(ROCR_Predict_log, measure = ""auc"")@y.values"
+"1","[[1]]
+"
+"1","[1]"
+"1"," 0.9999959"
+"1","
+"
+"1","
+"

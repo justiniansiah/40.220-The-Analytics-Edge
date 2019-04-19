@@ -1,0 +1,4 @@
+"0","predictcart1_prob <- predict(cart1e, newdata = Q1test, type=""prob"")"
+"0","pred_cart1 <- prediction(predictcart1_prob[,2],Q1test$over50k) "
+"0","perf_cart1 <- performance(pred_cart1, x.measure='fpr',measure = 'tpr')"
+"0","plot(perf_cart1)"

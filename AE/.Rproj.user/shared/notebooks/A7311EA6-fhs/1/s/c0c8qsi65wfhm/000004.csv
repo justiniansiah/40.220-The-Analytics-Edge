@@ -1,0 +1,56 @@
+"0","```r
+performance(predict3,measure=\"auc\")
+```"
+"1","An object of class \"performance\"
+Slot \"x.name\":
+[1] \"None\"
+
+Slot \"y.name\":
+[1] \"Area under the ROC curve\"
+
+Slot \"alpha.name\":
+[1] \"none\"
+
+Slot \"x.values\":
+list()
+
+Slot \"y.values\":
+[[1]]
+[1] 0.7574258
+
+
+Slot \"alpha.values\":
+list()
+"
+"0","```r
+summary(model3)
+```"
+"1","
+Call:
+glm(formula = TENCHD ~ SEX + AGE + SYSBP + CIGPDAY + GLUCOSE, 
+    family = \"binomial\", data = training)
+
+Deviance Residuals: 
+    Min       1Q   Median       3Q      Max  
+-2.3252  -0.5973  -0.4480  -0.3089   2.7699  
+
+Coefficients:
+             Estimate Std. Error z value Pr(>|z|)    
+(Intercept) -7.160110   0.524258 -13.658  < 2e-16 ***
+SEX         -0.540547   0.126240  -4.282 1.85e-05 ***
+AGE          0.059845   0.007537   7.940 2.02e-15 ***
+SYSBP        0.016072   0.002573   6.247 4.18e-10 ***
+CIGPDAY      0.018223   0.005058   3.602 0.000315 ***
+GLUCOSE      0.009935   0.002303   4.314 1.61e-05 ***
+---
+Signif. codes:  0 â€˜***â€™ 0.001 â€˜**â€™ 0.01 â€˜*â€™ 0.05 â€˜.â€™ 0.1 â€˜ â€™ 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 2143.5  on 2496  degrees of freedom
+Residual deviance: 1929.3  on 2491  degrees of freedom
+  (259 observations deleted due to missingness)
+AIC: 1941.3
+
+Number of Fisher Scoring iterations: 5
+"

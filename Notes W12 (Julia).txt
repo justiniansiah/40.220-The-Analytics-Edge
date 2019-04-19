@@ -1,0 +1,48 @@
+cd("D:\\School Stuff\\40 .220 The Analytics Edge")
+
+with IJulia
+notebook()
+
+or shift click open powershell -> jupyter notebook
+
+	[[ Solving Optimization Problems ]]
+0) Load Packages and define model
+	using JuMP
+	using GLPKMathProgInterface
+
+	testmodel = Model(solver = #)
+		#GLPSolverLP() for normal linear prog  
+		#GLPKSolverMIP() for integer prog
+
+1) Define the problem
+2) Define objective
+	- which model
+	- min or max
+	- objective function
+	- constriants
+
+## Inputting Data ##
+- # of decision variables
+- # of constraints
+- Coefficients of var and constr.
+
+n = 5 # no. of continuous decision variables
+p = 4 # no. of integer decision variables
+m = 3 # no. of constraints
+
+c = [1;3;5;2] -> 1 column of 4 rows
+
+# Coefficients for Ax = b
+A= [1 1 9 5; 3 5 0 8; 2 0 6 13]  -> 3 rows 4 columns
+b = [7; 3; 5]
+
+
+## Define Variables ##
+@variable(testmodel, x[1:n] >=0) #continuous
+@variable(testModel, y[1:p] >= 0, Int) # integer 
+
+
+## Constriants ##
+for i = 1:m
+    @constraint(testModel, sum{A[i,j]*x[j], j=1:n} + sum{B[i,j]*y[j], j=1:p} == f[i]) 
+end

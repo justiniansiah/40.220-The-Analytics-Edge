@@ -1,0 +1,17 @@
+"0","library(TTR)"
+"0","tempdf <- dataset3"
+"0","windowsize <- 4"
+"0","coeff <- 2.9"
+"0","MADataset <- data.frame(apply(tempdf[,2:32], 2, EMA, n=windowsize)) #Apply Moving Average"
+"0","for (i in 1:windowsize-1){"
+"0","  for (j in 1:31){"
+"0","    #MADataset[i,j] = tempdf[i,j] #putting back values for 1-4 (because moving average removes them)"
+"0","    MADataset[i,j] = MADataset[windowsize,j] #above results it high variation, so i just put all as the mean of the 1st rolling avg"
+"0","  }"
+"0","}"
+"0","MADataset <- subset(tempdf, select=-c(FLOW_PU5,FLOW_PU9)) #Remove filtered rows"
+"0","MAPred <- normalmethod(MADataset) "
+"2","‘-’ not meaningful for factors"
+"2","Error in if (abs(tempdf[i, j] - sigdata_mean[j]) > coeff * sigdata_sd[j]) { : 
+  missing value where TRUE/FALSE needed
+"

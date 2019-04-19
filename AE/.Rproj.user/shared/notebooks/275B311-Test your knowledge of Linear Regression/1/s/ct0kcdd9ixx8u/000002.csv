@@ -1,0 +1,13 @@
+"0","predict(lm1a,newdata=data.frame(horsepower=98),interval=c(""confidence""),level=.99)
+"
+"1"," "
+"1","      fit"
+"1","      lwr"
+"1","      upr"
+"1","
+1"
+"1"," 24.46708"
+"1"," 23.81669"
+"1"," 25.11747"
+"1","
+"

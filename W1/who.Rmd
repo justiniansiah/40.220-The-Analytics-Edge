@@ -1,0 +1,33 @@
+---
+title: "WHO Notebook"
+output: html_notebook
+---
+
+One of the advantages of software such as R is that you can add and install packages that provided added functionality. The ggplot2 packages is one such package that improves on the basic plotting in R. In this package, you build a graph by adding layer upon layer where you specify the data, aesthetic mapping, statistical transformations (if any) and geometric object (type of plot).
+
+We will use a data set from www.who.int/gho/en. The dataset contains data on 194 countries from WHO where the variables are: 
+Country - name of country, Region - region the country lies in, Population - population in thousands, Under15 - Percentage of the population under 15 years of age, Over60 - Percentage of the population over 60 years of age, FertilityRate - Average number of children per woman, LifeExpectancy - Life expectancy in years, LiteracyRate - Literacy rate among adults at least 15 years of age, GNI - Gross national income pe capita
+```{r}
+w <- read.csv("WHO.csv")
+str(w)
+which(w$Country=="Singapore")
+w[155,]
+summary(w$Over60)
+summary(w$Under15)
+```
+Singapore has a high fraction of population over 60 and low fraction of population under 15 as compared to many countries - ageing population and low fertility rate issues.  
+```{r}
+plot(w$GNI,w$FertilityRate)
+```
+The plot above indicates an inverse relation between income and fertility. This suggests that reproductive restraint arises often as a consequence of economic progress or lower fertility leads to more resources being available per child, makng them more productive (causality is not observable). This is often referred to as the demographic-economic paradox.
+
+More advanced plots
+```{r}
+install.packages("ggplot2")
+library(ggplot2)
+?ggplot
+ggplot(w,aes(x=GNI,y=FertilityRate))+geom_point()
+ggplot(w,aes(x=GNI,y=FertilityRate))+geom_point()+geom_smooth()
+ggplot(w,aes(x=GNI,y=FertilityRate,color=Region))+geom_point()
+```
+In the last figure, we color the points as per the regions by adding the color argument to the aesthetic option. This helps see the trend by regions. For example Europe has high GNI, low fertility rates while Africe has low GNI and high ferility rates.

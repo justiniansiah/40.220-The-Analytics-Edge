@@ -1,0 +1,3 @@
+"0","pred_cart2 <- predict(cart2, newdata = Q2test)"
+"0","mseQ2b <- mean((pred_cart2 -Q2test$medv)^2)"
+"0","plot(pred_cart2,Q2test$medv)"

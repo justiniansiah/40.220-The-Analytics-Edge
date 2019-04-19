@@ -1,0 +1,7 @@
+"0","```r
+plot(baseball2002$W,baseball2002$Team,col=ifelse(baseball2002$Playoffs==1,\"red\",\"black\"),pch=16)
+axis(1,at=seq(60,120,by=5))
+```"
+"0","```r
+abline(v=95)
+```"

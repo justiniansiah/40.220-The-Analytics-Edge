@@ -1,0 +1,230 @@
+
+# Script for Week 9 -- session 2 (in-class activity)
+
+
+######## 0. Set the working environemnt
+
+# Remove all variables from the R environment to create a fresh start
+rm(list=ls())
+
+# Set the working folder
+getwd()
+setwd("D:/School Stuff/40 .220 The Analytics Edge/W9/1) Text Analytics")
+
+# Load the Enron data
+# With the option stringsAsFactors=FALSE we make sure that character vectors are 
+# not converted into factors.
+energy <- read.csv("energy_bid.csv",stringsAsFactors=FALSE)
+str(energy)
+head(energy)
+# The dataframe contains a total of 851 emails, where energy$email is the email content, 
+# and energy$responsive is 1 if the email was responsive (to a query about energy bids and schedules) and 0 otherwise.
+
+# Let's take a look to a few emails
+energy$email[1] # list out the entire email (but this is hard to read). 
+# Let's try with the function strwrap, which wraps character strings to format paragraphs to be easy to read.
+?strwrap
+strwrap(energy$email[1])
+energy$responsive[1] # This takes value 0 since the email is not responsive to energy bid and schedule.
+strwrap(energy$email[4])
+energy$responsive[4] # The fourth email deals with the search on the energy bids and schedules. hence, the responsive variable takes a value of 1.
+
+# How many emails are responsvive?
+table(energy$responsive)
+137/(137+714) # That's about 16%
+
+
+######## 1. Pre-processing
+
+# Load the text mining and SnowballC package
+if(!require(tm)){
+  install.packages("tm")
+  library(tm)
+}
+if(!require(SnowballC)){
+  install.packages("SnowballC")
+  library(SnowballC)
+}
+
+# Create a corpus (a collection of emails, in our case)
+corpus <- Corpus(VectorSource(energy$email))
+as.character(corpus[[1]]) # We check the first entry
+strwrap(as.character(corpus[[1]])) # Read the email in the corpus
+
+# 1. Make lower case, remove english stopwords, remove punctuation, remove numbers, and stem.
+corpus <- tm_map(corpus,content_transformer(tolower))
+corpus <- tm_map(corpus,removeWords,stopwords("english"))
+corpus <- tm_map(corpus,removePunctuation)
+corpus <- tm_map(corpus,removeNumbers)
+corpus <- tm_map(corpus,stemDocument)
+
+#
+# Let's check the fourth email: note that it is much harder to read ... 
+# ... but it is mnore suitable to apply analytics!
+strwrap(energy$email[4]) 
+strwrap(as.character(corpus[[4]]))
+
+# 2. We create a document-term matrix from the text corpus: 
+# we will have 851 documents (rows) and 13798 terms (columns). 
+dtm <- DocumentTermMatrix(corpus)
+dtm
+#
+# Let's inspect the fourth email and see which are the non-zero terms
+inspect(dtm[4,])
+#
+# Finally, we remove all terms that do not occur in at least 3% of documents. 
+dtm <- removeSparseTerms(dtm,0.97)
+dtm
+
+
+######## 2. Mining the Document-Term matrix + Preparing it for model learning
+
+# We transform the term-document matrix into a matrix and, then, into a dataframe
+energysparse <- as.data.frame(as.matrix(dtm))
+# This helps ensure that columns have valid names
+colnames(energysparse) <- make.names(colnames(energysparse))
+str(energysparse)
+
+# Basic visualization with wordcloud
+#
+# Load the wordcloud package 
+if(!require(wordcloud)){
+  install.packages("wordcloud")
+  library(wordcloud)
+}
+# Get word counts in decreasing order
+word_freqs = sort(colSums(energysparse), decreasing=TRUE) 
+# Create data frame with words and their frequencies
+dm = data.frame(word=names(word_freqs), freq=unname(word_freqs))
+# Plot wordcloud
+wordcloud(dm$word, dm$freq, random.order=FALSE, colors=brewer.pal(8, "Dark2"))
+
+# Last step, we add the output variable (response) to the energysparse dataframe
+energysparse$responsive <- energy$responsive
+str(energysparse)
+# This is something we'll need to make predictions
+
+
+######## 3. Predictions
+
+# Let's prepare the data for our modelling exercise
+# Load the caTools package and set the seed
+if(!require(caTools)){
+  install.packages("caTools")
+  library(caTools)
+}
+set.seed(1978)
+#
+# Create train and test sets (with balanced response)
+spl <- sample.split(energysparse$responsive,SplitRatio=0.7)
+train <- subset(energysparse,spl==TRUE)
+test <- subset(energysparse,spl==FALSE)
+
+# 0. Baseline model, which predicts the most occuring case in training set on test set
+table(train$responsive)
+# 0   1 
+# 500 96 
+# The majority of emails are non-responsive. 
+# Note false negatives are more critical here (than false positive).
+#
+table(test$responsive)
+# 0   1 
+# 214 41
+# The accuracy is 214/(214+41)=0.83
+
+# 1. Classification And Regresstion Trees (CARTs)
+# Libraries
+library(rpart)
+library(rpart.plot)
+set.seed(1)
+#
+# Build the model and visualize it
+model1 <- rpart(data = train, as.factor(responsive)~.)
+prp(model1,type=4,extra=2)
+# Prediction
+predict1 <- predict(model1, newdata = test, type = "class")
+table1 <- table(predict1,test$responsive)
+table1
+sum(diag(table1)/sum(table1))
+#0.8392157
+
+# 2. Random Forests
+#
+# libraries
+library(randomForest)
+set.seed(1)
+#
+# Build model
+model2 <- ..
+summary(model2)
+# Variable importance
+varImpPlot(model2)
+#
+# Prediction
+predict2 <- ..
+table(predict2,test$responsive)
+#
+# Find out which predictor variables are actually used in the random forest.
+?varUsed 
+varUsed(model2)
+order2 <- sort(varUsed(model2),index.return=TRUE) # Return sorted frequency and indices
+tail(order2$ix)
+names(test[,tail(order2$ix)]) # we can see which words are important!
+
+# 3. Comparison between CART and RF
+#
+# libraries
+library(ROCR)
+#
+# Prediction
+predictprob1 <- predict(model1,newdata=test,type="prob")
+predictprob2 <- predict(model2,newdata=test,type="prob")
+pred1 <- prediction(predictprob1[,2],test$responsive)
+pred2 <- prediction(predictprob2[,2],test$responsive)
+performance(pred1,measure="auc") # 0.6776271
+performance(pred2,measure="auc") # 0.0.864543
+plot(performance(pred1,measure="tpr",x.measure="fpr"))
+plot(performance(pred2,measure="tpr",x.measure="fpr"))
+
+# 4. Naive Bayes classifiers
+#
+# libraries
+if(!require(e1071)){
+  install.packages("e1071")
+  library(e1071)
+}
+?naiveBayes
+# 
+# Build model: computes the conditional a-posterior probabilities of a categorical class variable  given independent predictor variables using the Bayes rule.
+model3 <- naiveBayes(as.factor(responsive)~.,data=train)
+summary(model3)
+#
+model3$apriori
+# Y
+# 0   1 
+# 500  96 
+#
+# List tables for each predictor. For each numeric variable, it gives target class, mean and standard deviation.
+model3$tables
+# Prediction
+predict3 <- predict(model3,newdata=test,type="class")
+table(predict3,test$responsive)
+sum(diag(table(predict3,test$responsive))/sum(table(predict3,test$responsive)))
+# predict3   0   1
+# 0 185  16
+# 1  29  25
+# The accuracy is (185+25)/(185+25+16+29) = 0.8235294 
+
+
+
+
+
+
+
+
+
+
+
+
+
+

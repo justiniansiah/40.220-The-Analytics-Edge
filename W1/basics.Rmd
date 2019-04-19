@@ -1,0 +1,262 @@
+---
+title: "Basic R Notebook"
+output:
+  html_notebook: default
+  pdf_document: default
+---
+
+Preliminaries
+
+Returns the current working directory
+```{r}
+getwd()
+```
+Provides help on a specific fucntion
+```{r}
+help(getwd)
+?getwd
+?setwd
+```
+Sets the current working directory
+```{r}
+setwd("C:/Users/natarajan_karthik/Desktop/AE")
+```
+Lists the files in a directory
+```{r}
+dir()
+```
+Lists objects stored in the R workspace
+```{r}
+ls()
+```
+Assign a number to a variable
+```{r}
+x <- 50
+x
+ls()
+```
+Alternative to assign a number to a variable
+```{r}
+y = 50
+y
+```
+Common functions - exponential, inverse, power, add
+```{r}
+exp(x)
+1/x
+x^3
+y <- x+6
+```
+Remove a variable from the workspace
+```{r}
+rm(y)
+ls()
+```
+Numbers and vectors
+
+Concatenates (combines) numbers to form a vector
+```{r}
+x <- c(1,-2,3,5,pi)
+x
+```
+Accessing specific elements of the vector
+```{r}
+x[2]
+```
+Applying operations to the vector - term by term inverse, concatenate vectors, exponentiation
+```{r}
+1/x
+y <- c(x,0,x)
+exp(y)
+y
+```
+You can overload the sum operator by recycling the shorter vector - mathematically adding vectors of different sizes are not permitted 
+```{r}
+y+x
+```
+Finding the maximum and minimum elements and identifying the location (index) of the first max and all max
+```{r}
+max(x)
+min(x)
+?which.max
+which.max(x)
+which(x==max(x))
+z <- c(x,5)
+which.max(z)
+which(z==max(z))
+```
+Other operations - sum, product, mean, variance, standard deviation
+```{r}
+sum(x)
+prod(x)
+mean(x)
+var(x)
+sd(x)
+```
+Maxium entry in a concatenated vector
+```{r}
+max(x,y)
+```
+Parallel maximum returns a vector of length equal to the longest argument that contains in each element, the largest element in that position of any of the vector
+```{r}
+?pmax
+pmax(x,y)
+```
+For a vector, it provides a six number summary including min, max, mean, 1st quartile, median and 3rd quartile. This can be used with other objects too.
+```{r}
+?summary
+summary(x)
+```
+Remove all variables from the workspace
+```{r}
+rm(list=ls())
+```
+Differences in the assignment using <- and ==. Try exp(a=1:5) and exp(a<-1:5)
+```{r}
+exp(a=1:5)
+a
+```
+```{r}
+exp(a<-1:5)
+a
+```
+Generating vectors using a variety of commands
+```{r}
+x <- -4:4
+?seq
+seq(-4,4,0.2)
+?rep
+x
+rep(x,times=2)
+rep(x,each=2)
+```
+Returns logical vector based on the check
+```{r}
+x > 1
+```
+Dealing with missing entries 
+```{r}
+?is.na
+is.na(x)
+y <- c(x,NA)
+y
+is.na(y)
+mean(y)
+?mean
+mean(y,na.rm=TRUE)
+```
+R stores objects in a variety of classes - numeric, integer, character, logical, list, matrix, dataframe and has logical overriding operations when you convert from one class to another
+```{r}
+z <- 0:9
+z
+class(z)
+z1 <- c("a","b")
+z1
+class(z1)
+w <- as.character(z)
+w
+class(w)
+as.integer(w)
+as.logical(c(5,0))
+w <- c(1,"a")
+w
+T
+F
+```
+Factor 
+```{r}
+x <- 1:7
+class(x)
+y <- factor(x)
+y
+levels(y)
+summary(y)
+x
+income <- c(500,1200,4000,2300,2300,1234,1345)
+```
+Computes the mean of subvectors in income from the factors in x
+```{r}
+income <- c(500,1200,4000,2300,2300,1234,1345)
+tapply(income,x,mean)
+x
+```
+Matrix, array - operations
+```{r}
+?matrix
+r <- matrix(c(3,4,5,6,7,8),nrow=3,ncol=2)
+r
+dim(r)
+r[2,2]
+r[5]
+r[1,]
+class(r)
+?array
+s <- array(c(3,4,5,6,7,8),c(3,2))
+s
+class(s)
+z <- 1:50
+z
+?dim
+dim(z) <- c(5,2,5)
+z[5,2,5]
+z[5,2,1:5]
+diag(10)
+?cbind
+cbind(c(1,2,3),c(4,5,6))
+rbind(c(1,2,3),c(4,5,6))
+z <- matrix(c(5,7,9,6,3,4),nrow=3,ncol=2)
+y <- matrix(c(1,3,0,9,5,-1),nrow=3,ncol=2)
+z*y
+z
+y
+help("%*%")
+z %*% t(y)
+a <- array(c(2,1,-1,2),c(2,2))
+b <- c(4,4)
+a
+b
+?solve
+solve(a,b)
+solve(a)
+eigen(a)
+E <- eigen(a)
+E$value
+E$vectors
+```
+List consists of an ordered collection of objects that can be of different or the same type.
+```{r}
+c(1,2,"a")
+?list
+karthik <- list(age=39,sex="M",child.ages=c(3,3))
+class(karthik)
+karthik
+kim <- list(age=30,sex="F",child.ages=NA)
+kim
+karthik$age
+karthik$child.ages
+karthik$child.ages[1]
+karthik[1]
+karthik[2]
+karthik[3]
+class(karthik[1])
+karthik[[1]]
+class(karthik[[1]])
+kk <- c(karthik,kim)
+kk
+kk$age
+kk[1]
+kk[3]
+kk[4]
+```
+Dataframes are a tightly coupled collection of variables that share many of the properties of matrices and lists and is the fundamental data structure that will be used in most of this course.
+```{r}
+?data.frame
+A <- data.frame(names=c("karthik","kim"),ages=c(39,30),children=c(2,0))
+class(A)
+A$names
+class(A$names)
+A$ages
+class(A$ages)
+A$spouse <- c("sam","jim")
+```
+

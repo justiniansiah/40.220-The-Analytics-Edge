@@ -1,0 +1,2 @@
+"0","set.seed(1)"
+"0","trainSmall <- Q1train[sample(nrow(Q1train), 2000),]"

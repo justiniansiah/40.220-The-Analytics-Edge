@@ -1,0 +1,5 @@
+"0","set.seed(144)"
+"0","library(caTools)"
+"0","split <- sample.split(parole$Violator, SplitRatio = 0.7)"
+"0","train <- subset(parole, split == TRUE)"
+"0","test <- subset(parole, split == FALSE)"

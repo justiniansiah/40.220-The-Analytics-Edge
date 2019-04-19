@@ -1,0 +1,4 @@
+"0","q[23] <- 1 #term 23
+"
+"2","Error in q[23] <- 1 : object of type 'closure' is not subsettable
+"

@@ -1,0 +1,1 @@
+"0","D <- mlogit.data(subset(oscarsPP, Year <=2006), choice=""Ch"", shape=""long"", alt.var = ""Mode"")"

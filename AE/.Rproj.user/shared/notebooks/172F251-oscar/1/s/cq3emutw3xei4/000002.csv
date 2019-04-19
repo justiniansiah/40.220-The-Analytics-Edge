@@ -1,0 +1,4 @@
+"0","oscarsPP <- subset(oscars, PP==1)"
+"0","oscarsDD <- subset(oscars, DD==1)"
+"0","oscarsMM <- subset(oscars, MM==1)"
+"0","oscarsFF <- subset(oscars, FF==1)"

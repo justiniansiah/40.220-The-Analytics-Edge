@@ -1,0 +1,5 @@
+"0","cumprod(4,6,8)
+"
+"2","Error in cumprod(4, 6, 8) : 
+  3 arguments passed to 'cumprod' which requires 1
+"

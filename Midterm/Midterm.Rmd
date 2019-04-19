@@ -1,0 +1,462 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+*****************************
+Preparation
+
+Reading in Files
+```{r}
+software <- read.csv("software.csv")
+breast <- read.csv("breastcancer.csv")
+
+str(software)
+str(breast)
+
+```
+
+
+*****************************
+Question 1
+
+1.1 The amount spent by customers in purchasign from the mailed catalog is normally distrubted
+
+```{r}
+hist(software$spending, breaks = seq(0,2000,100))
+
+
+
+```
+
+1.2 Avg $ and variance of $ spent by males and females respectively
+
+```{r}
+
+mean(software$spending[software$gender==1]) #males
+sd(software$spending[software$gender==1])^2
+var(software$spending[software$gender==1])
+mean(software$spending[software$gender==0]) #females
+var(software$spending[software$gender==0])
+
+
+```
+
+1.3 t-test
+
+```{r}
+avgspendM <- software$spending[software$gender==1]
+avgspendF <- software$spending[software$gender==0]
+t.test(avgspendM,avgspendF)
+
+
+```
+
+
+1.4 LM model 
+```{r}
+#software$partition
+softtrain <- software[software$partition=='t',]
+softtest <- software[software$partition=='test',]
+softval <- software[software$partition=='v',]
+
+
+lm14 <- lm(data=softtrain,spending~freq+last_update+first_update+web_order+address_res+address_us)
+summary(lm14)
+
+
+```
+
+1.5 ans qn using model
+A) cust move from non-res addr to resi addr (0 to 1)
+B) cust numb of trans in a year decreases by 1 unit
+
+on avg, which of the two, will the company be worse off in terms of revenue (spending)
+
+> A, cos lose more $$
+
+
+1.6 build smaller model only sig var but leave intercept inside
+compare adj R, which you prefer
+
+
+```{r}
+lm16 <- lm(data=softtrain,spending~freq+address_res)
+summary(lm16)
+
+
+```
+
+1.7 leaps to do subset sel
+backwards 
+which is drop first?
+comment on how this result relates to pvalue you est for FULL model
+
+```{r}
+library(leaps)
+model17 <- regsubsets(spending~freq+last_update+first_update+web_order+address_res+address_us,softtrain,nvmax=10,method='backward')
+summary(model17)
+
+```
+
+1.8 use adj r2 to pick best model
+which var are included
+
+```{r}
+plot18 <- summary(model17)$adjr2
+plot(plot18)
+
+maxRsquare <- which.max(plot18)
+maxRsquare
+plot18[maxRsquare]
+
+summary(model17)$which
+summary(model17)$which[maxRsquare,]
+
+
+
+```
+
+1.9 use val set to choose btwn 3 models
+for all 3 what is the sse in val set
+
+
+```{r}
+ModelPredFull <- predict(lm14, newdata = softval)
+ModelPredSmall <- predict(lm16, newdata = softval)
+
+lm17 <- lm(data=softtrain,spending~freq+last_update+address_res+address_us)
+ModelPredSubset <- predict(lm17, newdata = softval)
+
+sseFULL <- sum( (ModelPredFull - softval$spending)^2 )
+sseFULL
+
+sseSMALL <- sum( (ModelPredSmall - softval$spending)^2 )
+sseSMALL
+
+sseSUBSET <- sum( (ModelPredSubset - softval$spending)^2 )
+sseSUBSET
+
+
+
+```
+choose modelSMALL
+
+
+1.10 evaluate on test set
+what is sse
+are they consistent?
+
+
+```{r}
+ModelPredFull <- predict(lm14, newdata = softtest)
+ModelPredSmall <- predict(lm16, newdata = softtest)
+ModelPredSubset <- predict(lm17, newdata = softtest)
+
+sseFULL <- sum( (ModelPredFull - softtest$spending)^2 )
+sseFULL
+
+sseSMALL <- sum( (ModelPredSmall - softtest$spending)^2 )
+sseSMALL
+
+sseSUBSET <- sum( (ModelPredSubset - softtest$spending)^2 )
+sseSUBSET
+
+
+
+```
+
+Pick small still.
+
+
+
+**********************
+Question 2
+
+2.1 Which var has most numb of missing entries
+```{r}
+str(breast)
+
+summary(breast)
+
+```
+Density most missing  @ 76 
+
+
+2.2 got balance? (check severity levels)
+```{r}
+table(breast$severity)
+
+516/(516+445)
+445/(516+445)
+```
+Yes
+
+
+2.3 Drop all NA entries using na.omit
+split into test and training 60% of data into training
+set seed to 1000
+
+write the est eqn that predicts sev using age shape margin and dens and instercept
+
+
+```{r}
+newbreast<- na.omit(breast)
+summary(newbreast)
+
+set.seed(1000)
+library(caTools)
+breastsplit <- sample.split(newbreast$severity, SplitRatio = 0.6)
+breasttrain <- subset(newbreast, breastsplit == TRUE)
+breasttest <- subset(newbreast, breastsplit == FALSE)
+
+glm23 <- glm(data=breasttrain,severity~age+shape+margin+density,family=binomial)
+summary(glm23)
+```
+
+2.4 whats the odd ratio of age
+exp(0.05989)
+
+
+2.5 what is LL of model on test set ??????????
+what is acc of model thres 0.5
+```{r}
+
+BreastModelPredict <- predict(glm23, newdata = breasttest,type="response")
+summary(BreastModelPredict)
+
+-0.5*glm23$deviance
+
+table(as.integer(BreastModelPredict >= 0.5),breasttest$severity)
+
+(127+139)/(127+139+22+44)
+```
+
+
+2.6 use only stat sig pred var include intercept and rebuild
+what is LL on test set and acc?
+
+```{r}
+
+glm26 <- glm(data=breasttrain,severity~age+shape+margin,family=binomial)
+summary(glm26)
+
+
+-0.5*glm26$deviance
+
+BreastModelPredict2 <- predict(glm26, newdata = breasttest,type="response")
+table(as.integer(BreastModelPredict2 >= 0.5),breasttest$severity)
+
+(126+141)/(125+141+20+45)
+
+
+```
+
+2.7 calc partial area under ROC far FP rates which is 0.7 or larger (use model in 2.6)
+
+
+```{r}
+library(ROCR)
+ROCR_Predict <- prediction(BreastModelPredict2, breasttest$severity)
+
+performance(ROCR_Predict, measure = "auc", fpr.stop=0.7)
+
+
+```
+
+2.8 probit??
+what is LL on test set and acc?
+```{r}
+glm28 <- glm(data=breasttrain,severity~age+shape+margin,family=binomial(link="probit"))
+summary(glm28)
+
+
+-0.5*glm28$deviance
+
+BreastModelPredict2 <- predict(glm28, newdata = breasttest,type="response")
+table(as.integer(BreastModelPredict2 >= 0.5),breasttest$severity)
+
+(126+140)/(125+140+21+45)
+
+
+```
+
+2.9 which is better?
+Logistic
+
+
+2.10 
+
+```{r}
+newerbreast <- newbreast
+newerbreast$severity <- as.integer(newbreast$physician>=4)
+
+glm210 <- glm(data=newerbreast,severity~age+shape+margin,family=binomial)
+summary(glm210)
+
+BreastModelPredict3 <- predict(glm210, newdata = newerbreast,type="response")
+table(as.integer(BreastModelPredict3 >= 0.5),newerbreast$severity)
+
+table(newerbreast$severity)
+table(newbreast$severity)
+
+794-403
+
+```
+
+
+
+3.1
+```{r}
+seq(4,100,by=2)
+seq(6,100,by=2)
+cumprod(c(4,6,8)
+cumprod(seq(4,100,by=2))
+
+
+
+```
+
+
+
+```{r}
+
+
+0.2*0.4 + 0.2
+0.4*0.4 + 0.4
+```
+
+karthik_natarajan@sutd.edu.sg
+
+```{r}
+
+
+
+
+```
+
+
+
+```{r}
+
+
+
+
+```
+
+
+
+```{r}
+
+
+
+
+```
+
+
+
+```{r}
+
+
+
+
+```
+
+
+
+```{r}
+
+
+
+
+```
+
+
+
+```{r}
+
+
+
+
+```
+
+
+
+```{r}
+
+
+
+
+```
+
+
+
+```{r}
+
+
+
+
+```
+
+
+
+```{r}
+
+
+
+
+```
+
+
+
+```{r}
+
+
+
+
+```
+
+
+
+```{r}
+
+
+
+
+```
+
+
+
+```{r}
+
+
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

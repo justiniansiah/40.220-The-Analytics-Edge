@@ -1,0 +1,24 @@
+"0","```r
+summary(m5)
+
+```"
+"1","
+Call:
+lm(formula = RS ~ OBP + SLG, data = baseball2002)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-55.103 -14.808  -3.214  15.314  59.898 
+
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept) -1014.02      60.76 -16.688  < 2e-16 ***
+OBP          3562.39     267.63  13.311  < 2e-16 ***
+SLG          1412.57     149.33   9.459 5.15e-15 ***
+---
+Signif. codes:  0 â€˜***â€™ 0.001 â€˜**â€™ 0.01 â€˜*â€™ 0.05 â€˜.â€™ 0.1 â€˜ â€™ 1
+
+Residual standard error: 23.13 on 87 degrees of freedom
+Multiple R-squared:  0.9219,	Adjusted R-squared:  0.9201 
+F-statistic: 513.7 on 2 and 87 DF,  p-value: < 2.2e-16
+"

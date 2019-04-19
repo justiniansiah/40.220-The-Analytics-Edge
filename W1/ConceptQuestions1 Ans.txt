@@ -1,0 +1,18 @@
+Concept questions week 2
+
+1. rep(c(100:1),c(100:1))
+2. 3 12  0 24
+3. female 91, male 92, use the order as given - male 92, female 91, then Male 0, female 92
+4. X1 = as.numeric(as.character(X))
+5. ggplot(mtcars, aes(wt, mpg)) + geom_point() - inverse relationship
+
+   ggplot(mtcars, aes(wt, mpg)) + geom_point(aes(size = disp, color=cyl))
+6. tapply(mtcars$mpg,mtcars$cyl,sd)
+
+Concept questions week 2
+
+1. option 1
+2. False
+3. True
+4. True - differentiate with respect to beta_0 to prove the result
+5. False.  Since H(O): BETA = -1 would not be rejected at ALPHA = 0.05, it would not be rejected at ALPHA = 0.01

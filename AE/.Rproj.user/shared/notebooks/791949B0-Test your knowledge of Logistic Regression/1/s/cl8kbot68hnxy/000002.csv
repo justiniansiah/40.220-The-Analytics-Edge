@@ -1,0 +1,3 @@
+"0","presDEM <- pres"
+"0","presDEM$WIN <- as.numeric(as.logical(presDEM$WIN + 1)) #part i"
+"0","presDEM$GROWTH <- presDEM$INC*presDEM$GROWTH  #part ii"

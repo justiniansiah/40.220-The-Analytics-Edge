@@ -1,0 +1,4 @@
+"0","```r
+model2 <- regsubsets(y~.,data=eg1,nvmax=41,method=\"forward\")
+plot(summary(model2)$rsq)
+```"

@@ -1,0 +1,15 @@
+"0","library(ROCR)"
+"2","Loading required package: gplots
+"
+"2","
+Attaching package: ‘gplots’
+
+"
+"2","The following object is masked from ‘package:stats’:
+
+    lowess
+
+"
+"0","ROCR_Predict <- prediction(parolepred, test$Violator)"
+"2","Error in is.data.frame(predictions) : object 'parolepred' not found
+"

@@ -1,0 +1,7 @@
+"0","setwd(""D:/School Stuff/40 .220 The Analytics Edge/Competition/Code"")"
+"0","bestpred <- read.csv(""../Submissions/Team17_Try6 (0.76108).csv"")"
+"0","spedpred <- read.csv(""Team17_Try6b.csv"")"
+"0","dataset1 <- read.csv(""../Data/train_dataset01.csv"")"
+"0","dataset2 <- read.csv(""../Data/train_dataset02.csv"")"
+"0","dataset3 <- read.csv(""../Data/test_dataset.csv"")"
+"0","sample <- read.csv(""../Data/sample_submission.csv"")"

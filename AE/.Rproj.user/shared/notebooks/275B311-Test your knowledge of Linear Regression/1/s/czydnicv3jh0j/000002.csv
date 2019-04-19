@@ -1,0 +1,7 @@
+"0","batters$OBP <- (batters$H + batters$BB + batters$HBP) / (batters$AB + batters$BB + batters$HBP + batters$SF)"
+"0","batters$SLG <- (batters$H + batters$X2B+2 * batters$X3B+3 * batters$HR) / (batters$AB)"
+"0","mean(batters$OBP[batters$yearID==2006],na.rm=TRUE)"
+"1","[1]"
+"1"," 0.2707986"
+"1","
+"

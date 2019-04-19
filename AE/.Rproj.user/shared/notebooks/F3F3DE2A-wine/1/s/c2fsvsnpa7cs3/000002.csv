@@ -1,0 +1,5 @@
+"0","```r
+plot(winetrain$VINT,winetrain$LPRICE)
+?abline
+abline(model1)
+```"

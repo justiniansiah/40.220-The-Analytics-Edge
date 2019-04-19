@@ -1,0 +1,2 @@
+"0","?jitter"
+"0","plot(orings$Temp[orings$Field>0],jitter(orings$Field[orings$Field>0]))"

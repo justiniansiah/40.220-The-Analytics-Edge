@@ -1,0 +1,7 @@
+"0","LOGelection = 0*2.0638 + 1*-1.7852 + 2*0.469 "
+"0","election = exp(LOGelection)"
+"0","election/(1+election)"
+"1","[1]"
+"1"," 0.3000206"
+"1","
+"

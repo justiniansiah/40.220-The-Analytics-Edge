@@ -1,0 +1,60 @@
+"0","```r
+summary(baseball2002)
+```"
+"1","      Team    League       Year          Games             W         
+ ANA    : 3   AL:42   Min.   :1999   Min.   :161.0   Min.   : 62.00  
+ ARI    : 3   NL:48   1st Qu.:1999   1st Qu.:162.0   1st Qu.: 71.25  
+ ATL    : 3           Median :2000   Median :162.0   Median : 79.50  
+ BAL    : 3           Mean   :2000   Mean   :161.9   Mean   : 80.92  
+ BOS    : 3           3rd Qu.:2001   3rd Qu.:162.0   3rd Qu.: 90.75  
+ CHC    : 3           Max.   :2001   Max.   :163.0   Max.   :116.00  
+ (Other):72                                                          
+       RS               RA              OBP              SLG        
+ Min.   : 642.0   Min.   : 627.0   Min.   :0.3130   Min.   :0.3800  
+ 1st Qu.: 746.2   1st Qu.: 745.0   1st Qu.:0.3290   1st Qu.:0.4153  
+ Median : 801.5   Median : 815.5   Median :0.3410   Median :0.4315  
+ Mean   : 809.6   Mean   : 809.6   Mean   :0.3405   Mean   :0.4324  
+ 3rd Qu.: 869.5   3rd Qu.: 867.2   3rd Qu.:0.3518   3rd Qu.:0.4507  
+ Max.   :1009.0   Max.   :1028.0   Max.   :0.3730   Max.   :0.4830  
+                                                                    
+       BA              OPS              OOBP             OSLG       
+ Min.   :0.2460   Min.   :0.6990   Min.   :0.3010   Min.   :0.3770  
+ 1st Qu.:0.2610   1st Qu.:0.7452   1st Qu.:0.3290   1st Qu.:0.4160  
+ Median :0.2670   Median :0.7740   Median :0.3420   Median :0.4325  
+ Mean   :0.2684   Mean   :0.7728   Mean   :0.3405   Mean   :0.4325  
+ 3rd Qu.:0.2765   3rd Qu.:0.8007   3rd Qu.:0.3500   3rd Qu.:0.4507  
+ Max.   :0.2940   Max.   :0.8400   Max.   :0.3840   Max.   :0.4990  
+                                                                    
+      OOPS           Playoffs        RankSeason    RankPlayoffs  
+ Min.   :0.6790   Min.   :0.0000   Min.   :1.00   Min.   :1.000  
+ 1st Qu.:0.7492   1st Qu.:0.0000   1st Qu.:2.00   1st Qu.:2.750  
+ Median :0.7755   Median :0.0000   Median :4.00   Median :3.500  
+ Mean   :0.7730   Mean   :0.2667   Mean   :3.50   Mean   :3.125  
+ 3rd Qu.:0.8000   3rd Qu.:1.0000   3rd Qu.:4.25   3rd Qu.:4.000  
+ Max.   :0.8830   Max.   :1.0000   Max.   :7.00   Max.   :4.000  
+                                   NA's   :66     NA's   :66     
+"
+"0","```r
+m7 <- lm(RA~OOBP+OSLG,data=baseball2002)
+summary(m7)
+```"
+"1","
+Call:
+lm(formula = RA ~ OOBP + OSLG, data = baseball2002)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-82.397 -15.178  -0.129  17.679  60.955 
+
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept)  -837.38      60.26 -13.897  < 2e-16 ***
+OOBP         2913.60     291.97   9.979 4.46e-16 ***
+OSLG         1514.29     175.43   8.632 2.55e-13 ***
+---
+Signif. codes:  0 â€˜***â€™ 0.001 â€˜**â€™ 0.01 â€˜*â€™ 0.05 â€˜.â€™ 0.1 â€˜ â€™ 1
+
+Residual standard error: 25.67 on 87 degrees of freedom
+Multiple R-squared:  0.9073,	Adjusted R-squared:  0.9052 
+F-statistic: 425.8 on 2 and 87 DF,  p-value: < 2.2e-16
+"

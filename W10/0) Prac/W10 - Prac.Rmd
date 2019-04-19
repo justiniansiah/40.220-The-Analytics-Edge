@@ -1,0 +1,675 @@
+---
+title: "R Notebook"
+output: r_notebook
+---
+1. In this question, we will use cluster-then-predict, a methodology in which you first cluster observations and then build cluster-specific prediction models. 
+
+In this assignment, we'll use cluster-then-predict to predict future stock prices using historical stock data. When selecting which stocks to invest in, investors seek to obtain good future returns. In this problem, we will first use clustering to identify clusters of stocks that have similar returns over time. 
+
+Then, we'll use logistic regression to predict whether or not the stocks will have positive future returns. For this problem, we'll use StocksCluster.csv, which contains monthly stock returns from the NASDAQ stock exchange. 
+
+The NASDAQ is the second-largest stock exchange in the world, and it lists many technology companies. The stock price data used in this problem was obtained from infochimps, a website providing access to many datasets. Each observation in the dataset is the monthly returns of a particular company in a particular year. The years included are 2000-2009. The companies are limited to tickers that were listed on the exchange
+for the entire period 2000-2009, and whose stock price never fell below $1. So, for example, one observation is for Yahoo in 2000, and another observation is for Yahoo in 2001. 
+
+Our goal will be to predict whether or not the stock return in December will be positive, using the stock returns for the first 11 months of the year. This dataset contains the following variables:
+
+ ReturnJan: the return for the company's stock during January (in the year of the observation)
+ ReturnFeb: the return for the company's stock during February (in the year of the observation)
+ ReturnMar: the return for the company's stock during March (in the year of the observation)
+ ReturnApr: the return for the company's stock during April (in the year of the observation)
+ ReturnMay: the return for the company's stock during May (in the year of the observation)
+ ReturnJune: the return for the company's stock during June (in the year of the observation)
+ ReturnJuly: the return for the company's stock during July (in the year of the observation)
+ ReturnAug: the return for the company's stock during August (in the year of the observation)
+ ReturnSep: the return for the company's stock during September (in the year of the observation)
+ ReturnOct: the return for the company's stock during October (in the year of the observation)
+ ReturnNov: the return for the company's stock during November (in the year of the observation)
+ PositiveDec: whether or not the company's stock had a positive return in December (in the year of the observation). This variable takes value 1 if the return was positive, and value 0 if the return was not positive.
+
+For the first 11 variables, the value stored is a proportional change in stock value during that month. For instance, a value of 0.05 means the stock increased in value 5% during the month, while a value of -0.02 means the stock decreased in value 2% during the month.
+
+
+(a) Load StocksCluster.csv into a data frame called stocks. How many observations are in the dataset?
+
+```{r}
+setwd("D:/School Stuff/40 .220 The Analytics Edge/W10/0) Prac")
+stocks <- read.csv("StocksCluster.csv")
+str(stocks)
+```
+11580 Observations
+
+(b) What proportion of the observations have positive returns in December?
+
+```{r}
+table(stocks$PositiveDec)
+table(stocks$PositiveDec)[2]/sum(table(stocks$PositiveDec))
+```
+0.546114
+
+
+(c) What is the maximum correlation between any two return variables in the dataset? 
+You should look at the pairwise correlations between ReturnJan, ReturnFeb, ReturnMar, ReturnApr, ReturnMay, ReturnJune, ReturnJuly, ReturnAug, ReturnSep, ReturnOct, and ReturnNov
+```{r}
+sort(cor(stocks[,1:11]))
+```
+0.1916727856
+
+(d) Which month (from January through November) has the largest mean return across all observations in the dataset? 
+Which month (from January through November) has the smallest mean return across all observations in the dataset?
+```{r}
+mean <- replicate(11,0)
+for (i in 1:11){
+  mean[i] = mean(stocks[,i])
+}
+which.max(mean)
+
+#FASTER WAY IS
+sort(colMeans(stocks[,1:11]))
+
+```
+April
+
+(e) Run the following commands to split the data into a training set and testing set, putting 70% of the data in the training set and 30% of the data in the testing set:
+> set.seed(144)
+> spl <-􀀀 sample.split(stocks$PositiveDec, SplitRatio = 0.7)
+> stocksTrain <-􀀀 subset(stocks, spl == TRUE)
+> stocksTest <-􀀀 subset(stocks, spl == FALSE)
+
+Then, use the stocksTrain data frame to train a logistic regression model (name it StocksModel) to predict PositiveDec using all the other variables as independent variables. 
+What is the overall accuracy on the training set, using a threshold of 0.5?
+
+```{r}
+set.seed(144)
+spl <- sample.split(stocks$PositiveDec, SplitRatio = 0.7)
+stocksTrain <- subset(stocks, spl == TRUE)
+stocksTest <- subset(stocks, spl == FALSE)
+
+StocksModel <- glm(data=stocksTrain, family = "binomial", PositiveDec~.)
+stockpred <- predict(StocksModel, newdata = stocksTrain , type="response")
+stocktable <- table(stockpred>0.5, stocksTrain$PositiveDec)
+stocktable
+sum((diag(stocktable)/sum(stocktable)))
+
+```
+0.5711818
+
+
+(f) Now obtain test set predictions from StocksModel. What is the overall accuracy of the model on the test, again using a threshold of 0.5?
+```{r}
+stockpred_test <- predict(StocksModel, newdata = stocksTest , type="response")
+stocktable_test <- table(stockpred_test>0.5, stocksTest$PositiveDec)
+stocktable_test
+sum((diag(stocktable_test)/sum(stocktable_test)))
+
+
+
+```
+0.5670697
+
+
+(g) What is the accuracy on the test set of a baseline model that always predicts the most common outcome in the training set?
+
+```{r}
+table(stocksTrain$PositiveDec)
+table(stocksTrain$PositiveDec)[2]/sum(table(stocksTrain$PositiveDec))
+```
+0.5461387 
+
+(h) Now, let's cluster the stocks. The first step in this process is to remove the dependent variable using the following commands:
+> limitedTrain <􀀀 stocksTrain
+> limitedTrain$PositiveDec <􀀀 NULL
+> limitedTest <􀀀 stocksTest
+> limitedTest$PositiveDec <􀀀 NULL
+
+Why do we need to remove the dependent variable in the clustering phase of the cluster-then-predict methodology?
+i. Leaving in the dependent variable might lead to unbalanced clusters
+ii. Removing the dependent variable decreases the computational effort needed to cluster
+iii. Needing to know the dependent variable value to assign an observation to a cluster defeats the purpose of the methodology
+```{r}
+limitedTrain <- stocksTrain
+limitedTrain$PositiveDec <- NULL
+limitedTest <- stocksTest
+limitedTest$PositiveDec <- NULL
+```
+
+We remove the dependent variable because needing to know the dependent variable value to assign an observation to a cluster defeats the purpose of the methodology. (iii)
+
+
+(i) In some cases where we have a training and testing set, we might want to normalize by the mean and standard deviation of the variables in the training set. We can do this by using the caret package passing just the training set to the preProcess function, which normalizes variables by subtracting by the mean and dividing by the standard deviation.
+> library(caret)
+> preproc <􀀀 preProcess(limitedTrain)
+> normTrain <􀀀 predict(preproc, limitedTrain)
+> normTest <􀀀 predict(preproc, limitedTest)
+
+What is the mean of the ReturnJan variable in normTrain?
+What is the mean of the ReturnJan variable in normTest?
+
+
+```{r}
+library(caret)
+preproc <- preProcess(limitedTrain) #this automaticall does the normalizing
+normTrain <- predict(preproc, limitedTrain)
+normTest <- predict(preproc, limitedTest)
+
+colMeans(normTrain)
+colMeans(normTest)
+```
+1.330682e-17 and -0.0004185886
+
+
+(j) Why is the mean ReturnJan variable much closer to 0 in normTrain than in normTest?
+i. Small rounding errors exist in the normalization procedure
+ii. The distribution of the ReturnJan variable is different in the training and testing set
+iii. The distribution of the dependent variable is different in the training and testing set
+
+ii The distribution of the ReturnJan variable is different in the training and testing set
+
+
+
+(k) Set the random seed to 144 (it is important to do this again, even though we did it earlier). 
+Run k-means clustering with 3 clusters on normTrain, storing the result in an object called km. 
+Which cluster has the largest number of observations?
+i. Cluster 1
+ii. Cluster 2
+iii. Cluster 3
+
+```{r}
+set.seed(144)
+km <- kmeans(normTrain, centers=3)
+table(km$cluster)
+
+```
+   1    2    3 
+3157 4696  253 
+
+Cluster 2
+
+
+
+(l) In this question, we use the flexclust package to obtain training set and testing set cluster
+assignments for our observations and to do the predictions. Use the following commands:
+> library(flexclust)
+> km.kcca <􀀀 as.kcca(km, normTrain)
+> clusterTrain <􀀀 predict(km.kcca)
+> clusterTest <􀀀 predict(km.kcca, newdata=normTest)
+
+How many test-set observations were assigned to Cluster 2?
+
+```{r}
+library(flexclust)
+km.kcca <- as.kcca(km,normTrain)
+clusterTrain <- predict(km.kcca)
+clusterTest <- predict(km.kcca, newdata = normTest)
+
+table(clusterTest)
+
+```
+   1    2    3 
+1298 2080   96 
+
+2080 test set observations
+
+
+(m) Using the subset function, build data frames stocksTrain1, stocksTrain2, and stocksTrain3, containing the elements in the stocksTrain data frame assigned to clusters 1, 2, and 3, respectively (be careful to take subsets of stocksTrain, not of normTrain). 
+Similarly build stocksTest1, stocksTest2, and stocksTest3 from the stocksTest data frame.
+
+Which training set data frame has the highest average value of the dependent variable?
+i. stocksTrain1
+ii. stocksTrain2
+iii. stocksTrain3
+
+
+```{r}
+stocksTrain1 <- subset(stocksTrain,clusterTrain==1)
+stocksTrain2 <- subset(stocksTrain,clusterTrain==2)
+stocksTrain3 <- subset(stocksTrain,clusterTrain==3)
+
+stocksTest1 <- subset(stocksTest,clusterTest==1)
+stocksTest2 <- subset(stocksTest,clusterTest==2)
+stocksTest3 <- subset(stocksTest,clusterTest==3)
+
+mean(stocksTrain1$PositiveDec)
+mean(stocksTrain2$PositiveDec)
+mean(stocksTrain3$PositiveDec)
+
+```
+[1] 0.6024707
+[1] 0.5140545
+[1] 0.4387352
+
+StockTrain 1
+
+
+
+(n) Build logistic regression models StocksModel1, StocksModel2, and StocksModel3, which predict PositiveDec using all the other variables as independent variables. StocksModel1 should be trained on stocksTrain1, StocksModel2 should be trained on stocksTrain2, and StocksModel3 should be trained on stocksTrain3. 
+Which variables have a positive sign for the coefficient in at least one of StocksModel1, StocksModel2, and StocksModel3 and a negative sign for the coefficient in at least one of StocksModel1, StocksModel2, and StocksModel3?
+
+```{r}
+StocksModel1 <- glm(data = stocksTrain1, family = "binomial", PositiveDec~.)
+StocksModel2 <- glm(data = stocksTrain2, family = "binomial", PositiveDec~.)
+StocksModel3 <- glm(data = stocksTrain3, family = "binomial", PositiveDec~.)
+
+summary(StocksModel1)
+summary(StocksModel2)
+summary(StocksModel3)
+
+
+```
+Variables that are +ve and -ve in at least 1 of the models are:
+- ReturnJan (++-)
+- ReturnFeb (-+-)
+- ReturnMar (+-+)
+- ReturnJune(-++)
+- ReturnAug (+-+)
+- ReturnOct (--+)
+
+
+
+(o) Using StocksModel1, make test-set predictions called PredictTest1 on the data frame stocksTest1. 
+Using StocksModel2, make test-set predictions called PredictTest2 on thedata frame stocksTest2. 
+Using StocksModel3, make test-set predictions called PredictTest3 on the data frame stocksTest3.
+
+What is the overall accuracy of StocksModel1 on the test set stocksTest1, using a threshold of 0.5?
+What is the overall accuracy of StocksModel2 on the test set stocksTest2, using a threshold of 0.5?
+What is the overall accuracy of StocksModel3 on the test set stocksTest3, using a threshold of 0.5?
+
+```{r}
+
+Q1pred1 <- predict(StocksModel1, newdata = stocksTest1, type="response")
+Q1pred2 <- predict(StocksModel2, newdata = stocksTest2, type="response")
+Q1pred3 <- predict(StocksModel3, newdata = stocksTest3, type="response")
+
+Q1tab <- table(Q1pred1 >= 0.5, stocksTest1$PositiveDec)
+Q1tab
+sum(diag(Q1tab)/sum(Q1tab))
+Q1tab <- table(Q1pred2 >= 0.5, stocksTest2$PositiveDec)
+Q1tab
+sum(diag(Q1tab)/sum(Q1tab))
+Q1tab <- table(Q1pred3 >= 0.5, stocksTest3$PositiveDec)
+Q1tab
+sum(diag(Q1tab)/sum(Q1tab))
+
+
+```
+          0   1
+  FALSE  30  23
+  TRUE  471 774
+[1] 0.6194145
+       
+          0   1
+  FALSE 388 309
+  TRUE  626 757
+[1] 0.5504808
+       
+         0  1
+  FALSE 49 21
+  TRUE  13 13
+[1] 0.6458333
+
+
+
+(p) To compute the overall test-set accuracy of the cluster-then-predict approach, we can combine all the test-set predictions into a single vector and all the true outcomes into a single vector:
+> AllPredictions <􀀀 c(PredictTest1, PredictTest2, PredictTest3)
+> AllOutcomes <􀀀 c(stocksTest1$PositiveDec, stocksTest2$PositiveDec, stocksTest3$PositiveDec)
+
+What is the overall test-set accuracy of the cluster-then-predict approach, again using a threshold of 0.5?
+```{r}
+AllPredictions <- c(Q1pred1,Q1pred2,Q1pred3)
+AllOutcomes <- c(stocksTest1$PositiveDec,stocksTest2$PositiveDec,stocksTest3$PositiveDec)
+Q1tab <- table(AllPredictions >= 0.5, AllOutcomes)
+Q1tab
+sum(diag(Q1tab)/sum(Q1tab))
+
+
+```
+           0    1
+  FALSE  467  353
+  TRUE  1110 1544
+[1] 0.5788716
+
+********************************************************************************************************
+********************************************************************************************************
+
+Question 2
+
+Clustering is commonly used to divide a broad target market of customers into smaller, similar groups and then to design marketing strategies specifically for each group. In this question, you will use clustering to study publicly available data from the New York Citi Bike sharing
+program. 
+Citi Bike is the largest bike sharing program in the United States and serves various parts of the New York city. The data is provided in the file citibike.csv and contains trip information for the bike rides for the month of July 2013:
+
+ tripduration: Time duration of the trip (in seconds)
+ startstation: Name of the start station
+ endstation: Name of the end station
+ gender: Gender of user (1 = male, 2 = female)
+ age: Age of the user
+ day: Day on which the trip was started (Mon, Tue, Wed, Thu, Fri, Sat, Sun)
+ starttime: Start time of the trip in unit of hours (measured from 0 (12am) to 23 (11pm))
+
+
+(a) Read the dataset into the dataframe citi. How many bike stations are there in this dataset?
+
+```{r}
+citi <- read.csv("citibike.csv")
+length(unique(citi$startstation))
+```
+
+329
+
+
+(b) On which day of the week, is the average duration of the trips taken by bikers the maximum?
+```{r}
+tapply(citi$tripduration,citi$day,mean)
+```
+     Fri      Mon      Sat      Sun      Thu      Tue      Wed 
+832.3580 853.6248 894.2661 887.5528 865.7822 857.4895 843.5679 
+
+Saturday
+
+
+(c) What is the start hour when the maximum number of bikes are rented? 
+What is the start hour when the minimum number of bikes are rented?
+
+```{r}
+table(citi$starttime)
+max(table(citi$starttime))
+min(table(citi$starttime))
+```
+    0     1     2     3     4     5     6     7     8     9    10    11    12    13    14    15    16    17    18    19    20    21    22 
+ 7675  4184  2424  1478  1151  3117 13410 29131 52420 41442 25888 26569 33166 34584 32547 34654 43676 65277 65684 51495 37399 26727 20176 
+   23 
+13464 
+[1] 65684
+[1] 1151
+
+Max is 18
+Min is 4
+
+
+
+(d) In this dataset, what proportion of the bikes are rented by female users?
+
+```{r}
+table(citi$gender)
+table(citi$gender)[2]/sum(table(citi$gender))
+```
+     1      2 
+510826 156912 
+        2 
+0.2349904 
+
+
+(e) One of the challenges to do clustering with this data is the presence of the categorical variable for the day variable. To tackle this, we will define seven new binary variables (Mon to Sun), each of which takes a value of 1 if the corresponding trip is taken on that day and 0 otherwise.
+Write down one such sample R command(s) that you use to do this for a given day of the week.
+
+```{r}
+citi$Mon <- as.integer(citi$day=="Mon")
+citi$Tue <- as.integer(citi$day=="Tue")
+citi$Wed <- as.integer(citi$day=="Wed")
+citi$Thu <- as.integer(citi$day=="Thu")
+citi$Fri <- as.integer(citi$day=="Fri")
+citi$Sat <- as.integer(citi$day=="Sat")
+citi$Sun <- as.integer(citi$day=="Sun")
+```
+
+(f) In clustering data, it is often important to normalize the variables so that they are all on the same scale. If you clustered this dataset without normalizing, which variable would you expect to dominate in the distance calculations?
+ tripduration
+ gender
+ age
+ starttime
+ Mon
+
+```{r}
+summary(citi)
+```
+
+tripduration
+
+
+(g) Normalize the variables tripduration, gender, age, starttime, Mon, ..., Sun by using the scale() function in R. We normalize such that each variable has mean 0 and standard deviation 1. 
+What is the maximum value of tripduration in the normalized dataset?
+
+```{r}
+centeredciti <- citi
+centeredciti$tripduration <- scale(citi$tripduration)
+centeredciti$gender <- scale(citi$gender)
+centeredciti$age <- scale(citi$age)
+centeredciti$starttime <- scale(citi$starttime)
+centeredciti$Mon <- scale(citi$Mon)
+centeredciti$Tue <- scale(citi$Tue)
+centeredciti$Wed <- scale(citi$Wed)
+centeredciti$Thu <- scale(citi$Thu)
+centeredciti$Fri <- scale(citi$Fri)
+centeredciti$Sat <- scale(citi$Sat)
+centeredciti$Sun <- scale(citi$Sun)
+
+max(centeredciti$tripduration)
+```
+402.9514
+
+
+
+(h) We will not use hierarchical clustering for this dataset. 
+Why do you think hierarchical clustering might have a problem with this dataset?
+
+ We have categorical variables in this dataset, so we cant use hierarchical clustering.
+ We might have too many variables in the dataset for hierarchical clustering to handle.
+ We might have too many observations in the dataset for hierarchical clustering to handle.
+ We are sure of the number of clusters in this application, so using hierarchical clustering does not make sense.
+
+> iii - there are too many observations
+
+
+(i) Run the k-means algorithm on the normalized dataset with 10 clusters. 
+Use set.seed(100) in R just before running the code. 
+You only want to use the variables tripduration, gender, age, starttime, Mon, ..., Sun in building your clusters. 
+Use the default settings to build your model. 
+How many trips are there in the largest and smallest clusters respectively?
+
+```{r}
+set.seed(100) 
+cluster_kmeans <- kmeans(centeredciti[,c("tripduration","gender","age","starttime","Mon","Tue","Wed","Thu","Fri","Sat","Sun")],centers=10)
+sort(table(cluster_kmeans$cluster))
+```
+     1      5      2     10      6      8      3      7      4      9 
+ 18148  21409  47457  57884  63547  69153  84891  98628  99436 107185 
+ 
+ Largest is cluster 9 with 107185 trips
+ Smallest is cluster 1 with 18148 trips
+
+
+(j) Which cluster best fits the description "trips taken primarily by older users on Saturdays"?
+You can use the centers of the clusters to answer this question.
+
+```{r}
+cluster_kmeans$centers
+```
+
+   tripduration      gender         age    starttime        Mon        Tue        Wed        Thu        Fri        Sat       Sun
+1   0.072858922  1.80299766 -0.10540533 -0.040093878 -0.4372836 -0.4855556 -0.4882786 -0.3816420  2.6783460 -0.3391057 -0.339893
+2   0.020245389  0.18761389 -0.64091446  0.052809861 -0.4372836 -0.4855556 -0.4882786 -0.3816420 -0.3733642  2.9489285 -0.339893
+3   0.002615291 -0.01315714  0.02627901 -0.010131298 -0.4372836 -0.4855556 -0.4882786  2.6202529 -0.3733642 -0.3391057 -0.339893
+4  -0.031234691 -0.55423157  0.07826060  0.004153716 -0.4372836 -0.4855556  2.0480080 -0.3816420 -0.3733642 -0.3391057 -0.339893
+5   0.017598755 -0.13967955  1.11985924 -0.050591617 -0.4372836 -0.4855556 -0.4882786 -0.3816420 -0.3733642  2.9489285 -0.339893
+6  -0.039763879 -0.55423157  0.03803946 -0.104875348 -0.4372836 -0.4855556 -0.4882786 -0.3816420  2.6783460 -0.3391057 -0.339893
+7  -0.029791852 -0.55423157  0.07311514  0.004761192 -0.4372836  2.0594932 -0.4882786 -0.3816420 -0.3733642 -0.3391057 -0.339893
+8   0.015717426  0.08515270 -0.12675059  0.026080401 -0.4372836 -0.4855556 -0.4882786 -0.3816420 -0.3733642 -0.3391057  2.942098
+9  -0.004070735 -0.02634887  0.02757155  0.013132061  2.2868421 -0.4855556 -0.4882786 -0.3816420 -0.3733642 -0.3391057 -0.339893
+10  0.087047159  1.80380832 -0.09463120  0.047256550 -0.4371895  0.7792304  0.7874450 -0.3815901 -0.3733642 -0.3391057 -0.339893
+
+Cluster 5 (Highest age coeef and sat coeff)
+
+
+(k) Which cluster best fits the description "longer trips taken primarily by female users either on Tuesdays or Wednesdays"? 
+You can use the centers of the clusters to answer this question.
+
+Cluster 10.
+
+
+(l) If we ran k-means clustering a second time without making any additional calls to set.seed, we would expect
+ Different results from the first k-means clustering
+ Identical results to the first k-means clustering
+
+> Different results
+
+(m) If we ran k-means clustering a second time, again running the command set.seed(100) right before doing the clustering, we would expect
+ Different results from the first k-means clustering
+ Identical results to the first k-means clustering
+
+> Identical Results
+
+
+(n) Suppose the marketing department at Citi Bike decided that instead of using the days of the week for clustering, they would like to use a single variable weekday which took a value of 1 if the trip started on Monday, Tuesday, Wednesday, Thursday, or Friday and 0 if it started on a Saturday or Sunday. Redo the clustering. 
+As before, remember to normalize the weekday variable and run the k-means algorithm on the normalized dataset with 10 clusters. 
+Use set.seed(100) in R before running the code. 
+Which cluster best fits the description "longer trips taken by older female users on weekdays"? You can use the centers of the clusters to answer this question.
+
+```{r}
+citi$Weekday = 1-as.integer(citi$Sat==1 | citi$Sun ==1)
+centeredciti$Weekday = scale(citi$Weekday)
+
+set.seed(100)
+kmeans2 <- kmeans(centeredciti[,c("tripduration","gender","age","starttime","Weekday")],centers = 10)
+kmeans2$centers
+
+```
+
+cluster 1
+
+
+(o) Which cluster best fits the description "short trips taken by younger male users early on weekdays"? 
+You can use the centers of the clusters to answer this question.
+
+Cluster 9
+
+
+********************************************************************************************************
+********************************************************************************************************
+
+Question 3
+3. In this question, you will extend the collaborative filtering model from the class. In the class we developed three models for collaborative filtering using average item rating, using average user rating and by taking the average of the k nearest users using the Pearson correlation
+metric. In this question, you will extend the last model by using a weighted average where the weights are the similarity metric defined by the Pearson correlation. 
+Develop an R code to do this and verify the quality of the fit by changing the number of neighbors in the set of
+10; 50; 100; 150; 200; 250. 
+Compute the root mean squared error in each of these cases.
+
+Pre-process data as in class 10.2
+```{r}
+setwd("D:/School Stuff/40 .220 The Analytics Edge/W10/1) Recommendation Systems")
+ratings <- read.csv("ratings.csv")
+
+######## 1. We can start preparing the data for the analysis
+
+# Create an empty matrix with 706 rows (users) and 8552 (movies)
+Data <- matrix(nrow=length(unique(ratings$userId)), ncol=length(unique(ratings$movieId)))
+# We name the rows and columns with the unique users and movieid in the dataset
+rownames(Data) <- unique(ratings$userId)
+colnames(Data) <- unique(ratings$movieId)
+
+# We can now fill in the matrix
+for(i in 1:nrow(ratings)){
+  Data[as.character(ratings$userId[i]),as.character(ratings$movieId[i])] <- ratings$rating[i]
+}
+
+# Normalize the ratings of each user so that bias is reduced (na.rm=TRUE omitts the missing values)
+Datanorm <- Data - rowMeans(Data,na.rm=TRUE)
+
+# Split the data 
+# We want to create a matrix with spl1 + spl1c rows and spl2 + spl2c columns
+set.seed(1)       
+spl1 <- sample(1:nrow(Data), 0.98*nrow(Data)) # spl1 has 98% of the rows
+spl1c <- setdiff(1:nrow(Data),spl1)           # spl1c has the remaining ones
+set.seed(2)
+spl2 <- sample(1:ncol(Data), 0.8*ncol(Data))  # spl2 has 80% of the columns
+spl2c <- setdiff(1:ncol(Data),spl2)           # spl2c has the rest
+
+######## 2. Models
+
+# We create three different prediction models and corresponding predicted rating matrices
+
+# First, we initialize the matrices for the three models
+Base1    <- matrix(nrow=length(spl1c), ncol=length(spl2c))
+Base2    <- matrix(nrow=length(spl1c), ncol=length(spl2c))
+UserPred <- matrix(nrow=length(spl1c), ncol=length(spl2c))
+
+# Then, we make the predictions for models Base1 and Base2
+#
+# Base1: average out the item rating for all users in the training set (spl1) [average item rating]
+for(i in 1:length(spl1c)){
+  Base1[i,] <- colMeans(Data[spl1,spl2c], na.rm=TRUE)
+}
+#Base1[,1:5] # All rows (users) contain the same information
+#
+# Base2: average over the user rating for all the items in the training set (spl2) [average user rating]
+for(j in 1:length(spl2c)){
+  Base2[,j] <- rowMeans(Data[spl1c,spl2], na.rm=TRUE)
+}
+#Base2[,1:5] # All columns (movies) contain the same information
+
+setwd("D:/School Stuff/40 .220 The Analytics Edge/W10/0) Prac")
+
+```
+
+```{r}
+# For the third model, we first need to calculate the correlation between users
+#
+# Initialize matrices
+Cor <- matrix(nrow=length(spl1c),ncol=length(spl1)) # keeps track of the correlation between users (here cor has more columns) -> previously 1 col, rows for each 'old' user
+#but now is row for each 'new' user, 'old' users stored in cols now
+Order <- matrix(nrow=length(spl1c), ncol=length(spl1)) # sort users in term of decreasing correlations
+#
+# With this command, we create an Order matrix of dimensions 15x691, 
+# where each row corresponds to neighbors of the users in the spl1c in decreasing order of Pearson correlation. 
+# The NA accounts for users who have no common ratings of movies with the user.
+for(i in 1:length(spl1c)){
+  for(j in 1:length(spl1)){
+      Cor[i,j] <- cor(Data[spl1c[i],spl2],Data[spl1[j],spl2],use = "pairwise.complete.obs")
+      }
+  V <- order(Cor[i,], decreasing=TRUE, na.last=NA)
+  Order[i,] <- c(V, rep(NA, times=length(spl1)-length(V)))
+}
+
+```
+
+
+Modifing the third model:
+In this question, you will extend the last model by using a weighted average where the weights are the similarity metric defined by the Pearson correlation. 
+Develop an R code to do this and verify the quality of the fit by changing the number of neighbors in the set of
+10; 50; 100; 150; 200; 250. 
+Compute the root mean squared error in each of these cases.
+```{r}
+w.avg <- function(x,y){
+  z <- sum(x*y, na.rm = TRUE)/sum(y[which(!is.na(x))])
+  if (!is.na(z)){
+    if(z>5){
+      z <- 5
+    }
+    if (z<0){
+      z <- 0
+    }
+  }
+  return(z)
+}
+```
+
+```{r}
+numk <- c(10,50,100,150,200,250)
+RMSE <- rep(NA, times=length(numk)) #create an array to store rmse for each numk
+
+#for each 10,50,100,150,200,250
+for(ind in 1:length(numk)){
+  k <- numk[ind] #k = 10,50,100,150,200,250 
+  UserPred <- matrix(nrow=length(spl1c), ncol=length(spl2c)) #create matrix for testset
+  
+  #for each 'new' user 
+  for(i in 1:length(spl1c)){
+    w <- Cor[i,Order[i,1:k]] #get that user's ordered correlation data
+    D <- Data[spl1[Order[i,1:k]],spl2c] #get all the info for the 'old' user and interested movies but ordered.
+    UserPred[i,] <- apply(D,2,w.avg,y=w) #i still dunno how this works sorry 
+  }
+  RMSE[ind] <- sqrt(mean((Data[spl1c,spl2c] - UserPred)^2, na.rm = TRUE))
+}
+RMSE
+
+
+```
+
+

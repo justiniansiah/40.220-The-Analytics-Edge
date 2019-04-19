@@ -1,0 +1,43 @@
+"0","```r
+model1$residuals
+```"
+"1","          1           2           4           6           7           8 
+-0.09461844  0.48751867  0.20967287 -0.41591292 -0.58534581  0.75106129 
+          9          10          11          12          13          14 
+-0.76799160  1.24477550  0.17691260 -0.46049029  0.17399681 -0.84573608 
+         15          16          17          18          19          20 
+ 0.68463102 -0.18196187 -0.74040477 -0.60020767  0.68004944  0.32303654 
+         21          22          23          24          25          26 
+-0.62758635 -0.15793925 -0.46266215  0.57309496  0.43999206 -0.38454083 
+         27 
+ 0.58065627 
+"
+"0","```r
+sse1 <- sum(model1$residuals^2)
+sst1 <- sum((winetrain$LPRICE-mean(winetrain$LPRICE))^2)
+1 - sse1/sst1
+```"
+"1","[1] 0.2004897
+"
+"0","```r
+summary(model1)
+```"
+"1","
+Call:
+lm(formula = LPRICE ~ VINT, data = winetrain)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.84574 -0.46266 -0.09462  0.48752  1.24478 
+
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)  
+(Intercept) 72.99301   30.98789   2.356   0.0274 *
+VINT        -0.03786    0.01576  -2.402   0.0248 *
+---
+Signif. codes:  0 â€˜***â€™ 0.001 â€˜**â€™ 0.01 â€˜*â€™ 0.05 â€˜.â€™ 0.1 â€˜ â€™ 1
+
+Residual standard error: 0.594 on 23 degrees of freedom
+Multiple R-squared:  0.2005,	Adjusted R-squared:  0.1657 
+F-statistic: 5.768 on 1 and 23 DF,  p-value: 0.0248
+"

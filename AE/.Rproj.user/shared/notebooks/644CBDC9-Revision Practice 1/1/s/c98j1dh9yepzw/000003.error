@@ -1,0 +1,1 @@
+{"frames":[{"character_number":0,"end_character_number":0,"end_line_number":0,"file":"","func":"prediction(parolepred, test$Violator)","line_number":0},{"character_number":0,"end_character_number":0,"end_line_number":0,"file":"","func":"is.data.frame(predictions)","line_number":0}],"message":"Error in is.data.frame(predictions) : object 'parolepred' not found\n"}

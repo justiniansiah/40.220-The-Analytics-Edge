@@ -1,0 +1,69 @@
+"0","```r
+model2  <- lm(LPRICE~WRAIN,data=winetrain)
+summary(model2)
+```"
+"1","
+Call:
+lm(formula = LPRICE ~ WRAIN, data = winetrain)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.95348 -0.65439  0.04172  0.43136  1.27550 
+
+Coefficients:
+              Estimate Std. Error t value Pr(>|t|)   
+(Intercept) -1.8331730  0.6286160  -2.916  0.00777 **
+WRAIN        0.0006719  0.0010155   0.662  0.51479   
+---
+Signif. codes:  0 â€˜***â€™ 0.001 â€˜**â€™ 0.01 â€˜*â€™ 0.05 â€˜.â€™ 0.1 â€˜ â€™ 1
+
+Residual standard error: 0.6581 on 23 degrees of freedom
+Multiple R-squared:  0.01868,	Adjusted R-squared:  -0.02399 
+F-statistic: 0.4377 on 1 and 23 DF,  p-value: 0.5148
+"
+"0","```r
+model3  <- lm(LPRICE~HRAIN,data=winetrain)
+summary(model3)
+```"
+"1","
+Call:
+lm(formula = LPRICE ~ HRAIN, data = winetrain)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-1.1116 -0.3228 -0.1008  0.3691  1.1977 
+
+Coefficients:
+             Estimate Std. Error t value Pr(>|t|)   
+(Intercept) -0.695162   0.249152   -2.79  0.01040 * 
+HRAIN       -0.004923   0.001506   -3.27  0.00337 **
+---
+Signif. codes:  0 â€˜***â€™ 0.001 â€˜**â€™ 0.01 â€˜*â€™ 0.05 â€˜.â€™ 0.1 â€˜ â€™ 1
+
+Residual standard error: 0.5489 on 23 degrees of freedom
+Multiple R-squared:  0.3173,	Adjusted R-squared:  0.2877 
+F-statistic: 10.69 on 1 and 23 DF,  p-value: 0.003366
+"
+"0","```r
+model4  <- lm(LPRICE~DEGREES,data=winetrain)
+summary(model4)
+```"
+"1","
+Call:
+lm(formula = LPRICE ~ DEGREES, data = winetrain)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.78449 -0.23885 -0.03727  0.38994  0.90320 
+
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept) -11.9114     2.4935  -4.777 8.12e-05 ***
+DEGREES       0.6351     0.1509   4.208 0.000335 ***
+---
+Signif. codes:  0 â€˜***â€™ 0.001 â€˜**â€™ 0.01 â€˜*â€™ 0.05 â€˜.â€™ 0.1 â€˜ â€™ 1
+
+Residual standard error: 0.4993 on 23 degrees of freedom
+Multiple R-squared:  0.435,	Adjusted R-squared:  0.4105 
+F-statistic: 17.71 on 1 and 23 DF,  p-value: 0.0003351
+"

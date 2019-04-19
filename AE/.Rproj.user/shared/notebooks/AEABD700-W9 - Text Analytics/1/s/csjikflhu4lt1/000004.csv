@@ -1,0 +1,7 @@
+"0","emailsSparse$spam <- as.factor(emailsSparse$spam) #convertng Y var to factor"
+"0","#splitting to training and test sets"
+"0","library(caTools) "
+"0","set.seed(123)"
+"0","spl <- sample.split(emailsSparse$spam,SplitRatio=0.7)"
+"0","train <- subset(emailsSparse,spl==TRUE)"
+"0","test <- subset(emailsSparse,spl==FALSE)"

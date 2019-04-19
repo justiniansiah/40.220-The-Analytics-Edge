@@ -1,0 +1,143 @@
+W11
+
+	*read .txt
+read.table("")
+	*convert list to matrix
+as.matrix()
+	*transpose of matrix
+t()
+	#make into diagonal matrix
+diag(list)
+	#Ax = B, find x
+x = solve(A,B)
+
+	[[  Image Compression  ]]
+library(jpeg)
+
+	## Basic Matrix Manupulation ##
+A <- matrix(c(1,2,3,4), nrow=2, ncol=2
+	1  3
+	2  4
+	#gets eigenvalues and eigenvectors of A
+A_eig <- eigen(A)
+	$vectors 
+	$values
+
+A %% B  #Matrix multiplication
+
+A_eig$vectors %*% diag(A_eig$values) %*% solve(A_eig$vectors)
+	#A = V %% D %% V_1 
+
+	## Eigendecomposition ## 	X = UDV
+X <- matrix(c(),nrow=,ncol=)
+s <- svd(x)
+s$d # singular values
+s$u # left singular vectors
+s$v # right singular vectors
+
+	#Approximating X using some (not all) vectors
+X_hat = s$u[,1:3] %*% diag(s$d[1:3]) %*% t(s$v[,1:3]) ~= X
+
+	## SVD ##
+img <- readJPEG(".jpg")
+str(img)	#check array size
+
+	*GREYSCALE*
+		# The values of the channels
+min(img[,,1])
+max(img[,,1]) 
+
+	#all three channels have the same values
+max(abs((lky[,,1]-lky[,,2])))
+max(abs((lky[,,1]-lky[,,3])))
+
+	#Perform the Singular Value Decomposition (SVD)
+s <- svd(img[,,1])
+
+	#use to top k eigenvalues (singular values) to approximate image
+img_k <- s$u[,1:k] %*% diag(s$d[1:k]) %*% t(s$v[,1:k])
+
+	#save to jpg
+writeJPEG(img_k,"img_k.jpg")
+
+	*RGB*
+	#here we have 3 channels so we need to apply svd seperately
+s1 <- svd(img[,,1])
+s2 <- svd(img[,,2])
+s3 <- svd(img[,,3])
+
+	# initialize the vector for storing the approximation (use original size of img)
+img50 <- array(dim=c(600,465,3))
+k = 50
+img50[,,1] <- s1$u[,1:k] %*% diag(s1$d[1:k]) %*% t(s1$v[,1:k]) 
+img50[,,2] <- s2$u[,1:k] %*% diag(s2$d[1:k]) %*% t(s2$v[,1:k]) 
+img50[,,3] <- s3$u[,1:k] %*% diag(s3$d[1:k]) %*% t(s3$v[,1:k]) 
+
+	#save to jpg
+writeJPEG(img_50,"img_50.jpg")
+
+	#Plotting the cumulative sum of the (squared) singular values -> shows acc as more eigenvalues are used
+var <- cumsum(s$d^2)
+str(var)
+plot(1:SIZEOFIMG,var/max(var))
+
+
+W11.2a
+	[[  Censored Data  ]]
+	 #survival package contains the Tobit Model
+survreg  # Fit a parametric survival regression model.
+Surv     # Create a survival object, usually used as a response variable in a model formula.
+
+
+library(survival) 
+
+model <- survreg(Surv(y , y > 0, type="left") ~. , data = train, dist="gaussian")
+	
+	#Types "right", "left", "counting", "interval", "interval2" or "mstate".
+	#The error terms are assumed to be gaussian.***
+	#summary(model) --> Loglike (higher better), values (+ve better), pvalues (small better)
+	
+model$  #coefficients #icoef #var #loglik #iter #linear predictors #df #scale #idf #df.residuals #terms #means #call #dist #y
+
+	** Predictions **
+	#Same as before
+
+predict1 <- predict(model,newdata=test)
+
+W11.2b
+	[[  Survival Data  ]]
+	#Usually RIGHT censored. -> tracking ends after X years, no info after that (health, machines etc)
+	#Want to know status of people/items after the tracking
+library(survival) 
+	
+	#Kaplan-Meier Estimator
+	#survfit #create survival curves #km is variable name, survfit is function, Surv is object
+
+km <- survfit( Surv(start,stop,event)~1 , data=df ) 
+summary(km, censored=TRUE)
+
+pred <- predict(km, newdata = df) #this will return only beta'xi values
+	#using the coeff in summary(km) will also yield same values in pred (ie beta'xi)
+	#to get the prediction values will need to put in the formula:
+	#E(yi|xi) = [ pred * pnorm(pred/km$scale) ] + [ km$scale * dnorm(pred/km$scale) ]
+	
+	#R_squared = squared correlation between the fitted values of hours and the actual value.
+	#R_squared = ( cor( E(yi|xi) , df$y ) )^2 
+	
+
+
+
+	#Cox Proportional Hazard Model (Hazard rate)
+cox <- coxph( Surv(start,stop,event)~x1+x2 , data = df )
+
+	#lambda(t) = lamda_0(t) * exp(b1x1 + b2x2 + ...)
+	#xi is predictors, bi is coeff
+	#lamda_0(t) is baseline hazard ie value if all pred are 0
+
+
+
+
+
+
+
+

@@ -1,0 +1,89 @@
+"0","```r
+model6  <- lm(LPRICE~.,data=winetrain) #using all variables
+summary(model6)
+```"
+"1","
+Call:
+lm(formula = LPRICE ~ ., data = winetrain)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.45473 -0.24276  0.00753  0.19770  0.53640 
+
+Coefficients: (1 not defined because of singularities)
+              Estimate Std. Error t value Pr(>|t|)    
+(Intercept) 35.5297567 16.4435924   2.161 0.043028 *  
+VINT        -0.0239302  0.0080969  -2.955 0.007821 ** 
+WRAIN        0.0010756  0.0005073   2.120 0.046684 *  
+DEGREES      0.6072099  0.0987030   6.152  5.2e-06 ***
+HRAIN       -0.0039715  0.0008538  -4.652 0.000154 ***
+TIME_SV             NA         NA      NA       NA    
+---
+Signif. codes:  0 â€˜***â€™ 0.001 â€˜**â€™ 0.01 â€˜*â€™ 0.05 â€˜.â€™ 0.1 â€˜ â€™ 1
+
+Residual standard error: 0.295 on 20 degrees of freedom
+Multiple R-squared:  0.8286,	Adjusted R-squared:  0.7943 
+F-statistic: 24.17 on 4 and 20 DF,  p-value: 2.036e-07
+"
+"0","```r
+cor(winetrain)
+```"
+"1","               VINT     LPRICE       WRAIN     DEGREES       HRAIN     TIME_SV
+VINT     1.00000000 -0.4477608  0.01697002 -0.24691585  0.02800907 -1.00000000
+LPRICE  -0.44776081  1.0000000  0.13666199  0.65955892 -0.56332212  0.44776081
+WRAIN    0.01697002  0.1366620  1.00000000 -0.32109061 -0.27544085 -0.01697002
+DEGREES -0.24691585  0.6595589 -0.32109061  1.00000000 -0.06449593  0.24691585
+HRAIN    0.02800907 -0.5633221 -0.27544085 -0.06449593  1.00000000 -0.02800907
+TIME_SV -1.00000000  0.4477608 -0.01697002  0.24691585 -0.02800907  1.00000000
+"
+"0","```r
+model7  <- lm(LPRICE~VINT+WRAIN+DEGREES+HRAIN,data=winetrain)
+summary(model7)
+```"
+"1","
+Call:
+lm(formula = LPRICE ~ VINT + WRAIN + DEGREES + HRAIN, data = winetrain)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.45473 -0.24276  0.00753  0.19770  0.53640 
+
+Coefficients:
+              Estimate Std. Error t value Pr(>|t|)    
+(Intercept) 35.5297567 16.4435924   2.161 0.043028 *  
+VINT        -0.0239302  0.0080969  -2.955 0.007821 ** 
+WRAIN        0.0010756  0.0005073   2.120 0.046684 *  
+DEGREES      0.6072099  0.0987030   6.152  5.2e-06 ***
+HRAIN       -0.0039715  0.0008538  -4.652 0.000154 ***
+---
+Signif. codes:  0 â€˜***â€™ 0.001 â€˜**â€™ 0.01 â€˜*â€™ 0.05 â€˜.â€™ 0.1 â€˜ â€™ 1
+
+Residual standard error: 0.295 on 20 degrees of freedom
+Multiple R-squared:  0.8286,	Adjusted R-squared:  0.7943 
+F-statistic: 24.17 on 4 and 20 DF,  p-value: 2.036e-07
+"
+"0","```r
+model7a <- lm(LPRICE~WRAIN+DEGREES+HRAIN,data=winetrain)
+summary(model7a)
+```"
+"1","
+Call:
+lm(formula = LPRICE ~ WRAIN + DEGREES + HRAIN, data = winetrain)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.67475 -0.12957  0.01975  0.20754  0.63848 
+
+Coefficients:
+              Estimate Std. Error t value Pr(>|t|)    
+(Intercept) -1.280e+01  2.037e+00  -6.282 3.13e-06 ***
+WRAIN        1.177e-03  5.920e-04   1.987 0.060085 .  
+DEGREES      6.810e-01  1.117e-01   6.097 4.75e-06 ***
+HRAIN       -3.948e-03  9.987e-04  -3.953 0.000726 ***
+---
+Signif. codes:  0 â€˜***â€™ 0.001 â€˜**â€™ 0.01 â€˜*â€™ 0.05 â€˜.â€™ 0.1 â€˜ â€™ 1
+
+Residual standard error: 0.345 on 21 degrees of freedom
+Multiple R-squared:  0.7537,	Adjusted R-squared:  0.7185 
+F-statistic: 21.42 on 3 and 21 DF,  p-value: 1.359e-06
+"

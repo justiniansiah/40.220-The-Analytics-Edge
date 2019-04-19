@@ -1,0 +1,1016 @@
+---
+title: "Test your knowledge of Logistic Regression"
+output: html_notebook
+---
+
+
+****************************************************************************************************************************
+Question 1 (https://rpubs.com/nishantsbi/90539)
+
+1. In this question, we will use the data in baseballlarge.csv to investigate how well we can predict the World Series winner at the beginning of the playoffs. The dataset has the following fields:
+
+ Team: A code for the name of the team
+ League: The Major League Baseball league the team belongs to, either AL (American League) or NL (National League)
+ Year: The year of the corresponding record
+ Games: The number of games a team played in that year
+ W: The number of regular season wins by the team in that year
+ RS: The number of runs scored by the team in that year
+ RA: The number of runs allowed by the team in that year
+ OBP: The on-base percentage of the team in that year
+ SLG: The slugging percentage of the team in that year
+ BA: The batting average of the team in that year
+ Playoffs: Whether the team made the playoffs in that year (1 for yes, 0 for no)
+ RankSeason: Among the playoff teams in that year, the ranking of their regular season records (1 is best)
+ RankPlayoffs: Among the playoff teams in that year, how well they fared in the playoffs.
+
+The team winning the World Series gets a RankPlayoffs of 1.
+
+
+(a) Each row in the baseball dataset represents a team in a particular year. 
+- Read the data into a dataframe called \baseballlarge".
+
+i. How many team/year pairs are there in the whole dataset?
+
+ii. Though the dataset contains data from 1962 until 2012, we removed several years with shorter-than-usual seasons. 
+- Using the table() function, identify the total number of years included in this dataset.
+
+iii. Because we're only analyzing teams that made the playoffs, 
+- use the subset() function to create a smaller data frame limited to teams that made the playoffs. 
+Your subsetted data frame should still be called \baseballlarge". 
+- How many team/year pairs are included in the new dataset?
+
+iv. Through the years, different numbers of teams have been invited to the playoffs. 
+Find the diferent number of teams making the playoffs across the seasons.
+
+```{r}
+baseballlarge <-read.csv("baseballlarge.csv")
+str(baseballlarge)
+
+length(table(baseballlarge$Year))
+
+baseballlarge <- subset(baseballlarge,Playoffs ==1)
+str(baseballlarge)
+
+table(baseballlarge$Year)
+```
+
+i) There are 1232 Team/Year Pairs
+ii) 47 Years
+iii) There are 244 Team/Year Pairs
+iv) refer to table(baseballlarge$Year)
+
+
+
+(b) It's much harder to win the World Series if there are 10 teams competing for the championship versus just two. 
+Therefore, we will add the predictor variable NumCompetitors to the data frame. NumCompetitors will contain the number of total teams making theplayoffs in the year of a particular team/year pair. 
+For instance, NumCompetitors should be 2 for the 1962 New York Yankees, but it should be 8 for the 1998 Boston Red Sox.
+We want to look up the number of teams in the playoffs for each team/year pair in the dataset, and store it as a new variable named NumCompetitors in the data frame. 
+Do this. 
+How many playoff team/year pairs are there in the dataset from years where 8 teams were invited to the playoffs?
+
+
+```{r}
+PlayoffTable = table(baseballlarge$Year)
+names(PlayoffTable)
+baseballlarge$NumCompetitors <- PlayoffTable[as.character(baseballlarge$Year)]
+
+#str(subset(baseballlarge,baseballlarge$NumCompetitors==8))
+table(baseballlarge$NumCompetitors)
+```
+128 Team/Year Pairs
+
+
+(c) In this problem, we seek to predict whether a team won the World Series; in our dataset this is denoted with a RankPlayoffs value of 1. 
+- Add a variable named WorldSeries to the data frame that takes value 1 if a team won the World Series in the indicated year and a 0 otherwise.
+- How many observations do we have in our dataset where a team did NOT win the World Series?
+
+
+```{r}
+baseballlarge$WorldSeries <-  as.numeric(baseballlarge$RankPlayoffs == 1)
+table(baseballlarge$WorldSeries)
+
+```
+
+!97 Observations where they do not win
+
+
+
+
+(d) When we're not sure which of our variables are useful in predicting a particular outcome, it's often helpful to build simple models, which are models that predict the outcome using a single independent variable. 
+Which of the variables is a significant predictor of the WorldSeries variable in a logistic regression model? 
+To determine significance, remember to look at the stars in the summary output of the model. 
+We'll define an independent variable as significant if there is at least one star at the end of the coefficients row for that variable (this is equivalent to the probability column having a value smaller than 0.05). Note that you have to build multiple models (Year, RS, RA, W, OBP, SLG, BA, RankSeason, NumCompetitors, League) to answer this question (you can code the Leaguevariable as a categorical variable). 
+Use the dataframe baseballlarge to build the models.
+
+
+
+```{r}
+summary(glm(data=baseballlarge, family="binomial",WorldSeries~Year))
+summary(glm(data=baseballlarge, family="binomial",WorldSeries~RS))
+summary(glm(data=baseballlarge, family="binomial",WorldSeries~RA))
+summary(glm(data=baseballlarge, family="binomial",WorldSeries~W))
+summary(glm(data=baseballlarge, family="binomial",WorldSeries~OBP))
+summary(glm(data=baseballlarge, family="binomial",WorldSeries~SLG))
+summary(glm(data=baseballlarge, family="binomial",WorldSeries~BA))
+summary(glm(data=baseballlarge, family="binomial",WorldSeries~RankSeason))
+summary(glm(data=baseballlarge, family="binomial",WorldSeries~NumCompetitors))
+summary(glm(data=baseballlarge, family="binomial",WorldSeries~League))
+
+
+```
+
+Year, RA, RankSeason, NumCompetitors are significant
+
+
+
+
+(e) In this question, we will consider multivariate models that combine the variables we found to be significant in (d). 
+- Build a model using all of the variables that you found to be significant in (d). 
+- How many variables are significant in the combined model?
+
+```{r}
+lm1e <- glm(data=baseballlarge, family="binomial",WorldSeries~Year+RA+RankSeason+NumCompetitors)
+summary(lm1e)
+
+```
+
+None of the variables are significant in the combined model.
+
+
+
+(f) Often, variables that were significant in single variable models are no longer significant in multivariate analysis due to correlation between the variables. 
+- Are there any such variables in this example? 
+- Which of the variable pairs have a high degree of correlation (a correlation greater than 0.8 or less than -0.8)?
+
+```{r}
+cor(baseballlarge[c("Year","RankSeason","RA","NumCompetitors")])
+
+```
+Year is highly correlated to NumCompetitors
+
+
+(g) Build all of the two variable models from (f). Together with the models from (d), you should have different logistic regression models. 
+- Which model has the best AIC value (the minimum AIC value)?
+
+```{r}
+step(lm1e)
+
+```
+
+Lowest AIC value is 230, with WorldSeries ~ NumCompetitors
+
+
+(h) Comment on your results.
+
+None of the models with two independent variables had both variables significant, so none seem promising as compared to a simple bivariate model. Indeed the model with the lowest AIC value is the model with just NumCompetitors as the independent variable.This seems to confirm the claim made by Billy Beane in Moneyball that all that matters in the Playoffs is luck, since NumCompetitors has nothing to do with the quality of the teams!
+
+
+
+****************************************************************************************************************************
+Question 2
+
+
+
+In this question, we will build on the Parole.csv dataset from the first week to build and validate a model that predicts if an inmate will violate the terms of his or her parole. Such a model could be useful to a parole board when deciding to approve or deny an application for
+parole.
+
+
+(a) Load the dataset Parole.csv into a data frame called Parole. 
+- How many parolees are contained in the dataset?
+```{r}
+parole <- read.csv("Parole.csv")
+str(parole)
+```
+675 Paroles are contained
+
+
+(b) How many of the parolees in the dataset violated the terms of their parole?
+```{r}
+table(parole$Violator)
+
+```
+
+78 Parolees Violated the terms
+
+```{r}
+
+
+```
+
+
+
+(c) Factor variables are variables that take on a discrete set of values and can be either unordered or ordered. Names of countries indexed by levels is an example of an unordered factor because there isn't any natural ordering between the levels. An ordered factor has a natural ordering between the levels (an example would be the classifications \large", \medium" and \small"). 
+
+- Which variables in this dataset are unordered factors with at least three levels? 
+
+To deal with unordered factors in a regression model, the standard practice is to define one level as the \reference level" and create a binary variable for each of the remaining levels. In this way, a factor with n levels is replaced by n-1 binaryvariables. We will see this in question (e).
+
+State and Crime
+
+
+
+(d) To ensure consistent training/testing set splits, run the following 5 lines of code (do not include the line numbers at the beginning):
+(1) > set.seed(144)
+(2) > library(caTools)
+(3) > split <􀀀 sample.split(Parole$Violator, SplitRatio = 0.7)
+(4) > train <􀀀 subset(Parole, split == TRUE)
+(5) > test <􀀀 subset(Parole, split == FALSE)
+
+Roughly what proportion of parolees have been allocated to the training and testing sets?
+
+Now, suppose you re-ran lines (1)-(5) again. What would you expect?
+ The exact same training/testing set split as the first execution of (1)-(5)
+ A different training/testing set split from the first execution of (1)-(5)
+If you instead ONLY re-ran lines (3)-(5), what would you expect?
+ The exact same training/testing set split as the first execution of (1)-(5)
+ A different training/testing set split from the first execution of (1)-(5)
+
+If you instead called set.seed() with a different number and then re-ran lines (3)-(5), what
+would you expect?
+ The exact same training/testing set split as the first execution of (1)-(5)
+ A different training/testing set split from the first execution of (1)-(5)
+
+```{r}
+set.seed(144)
+library(caTools)
+split <- sample.split(parole$Violator, SplitRatio = 0.7)
+train <- subset(parole, split == TRUE)
+test <- subset(parole, split == FALSE)
+
+
+```
+
+70% to the training set, 30% to the testing set
+Exact same, this is due to the setting of the seed.
+If only 3-5 is run, then the split will be different
+
+
+
+
+(e) If you tested other training/testing set splits in the previous section, please re-run the original 5 lines of code to obtain the original split. 
+- Using glm, train a logistic regression model on the training set. Your dependent variable is \Violator", and you should use all the other variables as independent variables. 
+- What variables are significant in this model? Significant variables should have a least one star, or should have a p-value less
+than 0.05.
+
+
+```{r}
+parole$State<-as.factor(parole$State)
+parole$Crime<-as.factor(parole$Crime)
+glm2e <- (glm(data=train,family="binomial", Violator~.))
+summary(glm2e)
+
+```
+RaceWhite, StateVirginia, MultipleOffenses are significant
+
+
+
+(f) What can we say based on the coeffcient of the MultipleOffenses variable?
+ Our model predicts that parolees who committed multiple offenses have 1.61 times higher odds of being a violator than the average parolee.
+ Our model predicts that a parolee who committed multiple offenses has 1.61 times higher odds of being a violator than a parolee who did not commit multiple offenses but is otherwise identical.
+ Our model predicts that parolees who committed multiple offenses have 5.01 times higher odds of being a violator than the average parolee.
+ Our model predicts that a parolee who committed multiple offenses has 5.01 times higher odds of being a violator than a parolee who did not commit multiple offensesbut is otherwise identical.
+
+```{r}
+exp(1.6119919)
+
+```
+Option 4. 5.01x more
+
+
+
+(g) Consider a parolee who is male, of white race, aged 50 years at prison release, from Kentucky, served 3 months, had a maximum sentence of 12 months, did not commit multiple offenses, and committed a larceny. 
+- According to the model, what are the odds this individual is a violator? 
+- According to the model, what is the probability this individual is a violator?
+
+
+```{r}
+Logodds<- -2.0361809 + 0.3869904*1 + -0.8867192*1 + -0.0001756*50 + -0.1238867*3 + 0.0802954*12 + 1.6119919*0 + 0.6837143*1
+#Logodds<--4.2411574 + 0.3869904*1+ 0.8867192*1+ -0.0001756*50 + 0 + -0.1238867*3 + 0.0802954*12 + 0 + 0.6837143*1
+Logodds
+exp(Logodds)
+
+exp(Logodds)/(1+exp(Logodds))
+```
+Odds that he is a violator is 0.2810871
+Probability that he is a violator is 0.2194129
+
+
+(h) Use the predict() function to obtain the model's predicted probabilities for parolees in the test set. 
+- What is the maximum predicted probability of a violation?
+
+```{r}
+predictions <- (predict(glm2e,newdata=test ,type="response"))
+summary(predictions)
+
+```
+Max pred prob is 0.90
+
+
+
+(i) In the following questions, evaluate the model's predictions on the test set using a threshold of 0.5. 
+- What is the model's sensitivity? 
+- What is the model's specificity? 
+- What is the model's accuracy?
+
+```{r}
+table(as.numeric(predictions >= 0.5),test$Violator)
+
+12/(11+12) # The sensitivity (proportion of the actual violators we got correct) is 12/(11+12) = 0.522
+167/(167+12) #the specificity (proportion of the actual non-violators we got correct) is 167/(167+12) = 0.933
+(167+12)/(167+12+11+12) #There are 202 observations in the test set. The accuracy (percentage of values on the diagonal) is (167+12)/202 = 0.886
+```
+
+(j) What is the accuracy of a simple model that predicts that every parolee is a non-violator?
+```{r}
+table(test$Violator)
+179/(179+23)
+```
+ 0.8861386
+ 
+ 
+ 
+ (k) Consider a parole board using the model to predict whether parolees will be violators or not. The job of a parole board is to make sure that a prisoner is ready to be released into free society, and therefore parole boards tend to be particularily concerned with releasing prisoners who will violate their parole. 
+Which of the following most likely describes their preferences and best course of action?
+ The board assigns more cost to a false negative than a false positive, and should therefore use a logistic regression cutoff higher than 0.5.
+ The board assigns more cost to a false negative than a false positive, and should therefore use a logistic regression cutoff less than 0.5.
+ The board assigns equal cost to a false positive and a false negative, and should therefore use a logistic regression cutoff equal to 0.5.
+ The board assigns more cost to a false positive than a false negative, and should therefore use a logistic regression cutoff higher than 0.5.
+ The board assigns more cost to a false positive than a false negative, and should therefore use a logistic regression cutoff less than 0.5.
+
+
+Ans: option 2
+
+Releasing a false negative (Predicted non-violator who violates) is more of a concern so they will assign a higher cost to it.
+They should therefore use a logistic regression cutoff less than 0.5.
+
+#EXPLANATION: If the board used the model for parole decisions, a negative prediction would lead to a prisoner being granted parole, while a positive prediction would lead to a prisoner being denied parole. The parole board would experience more regret for releasing a prisoner who then violates parole (a negative prediction that is actually positive, or false negative) than it would experience for denying parole to a prisoner who would not have violated parole (a positive prediction that is actually negative, or false positive).
+
+#Decreasing the cutoff leads to more positive predictions (deny more), which increases false positives and decreases false negatives. Meanwhile, increasing the cutoff leads to more negative predictions (grant more), which increases false negatives and decreases false positives. The parole board assigns high cost to false negatives, and therefore should decrease the cutoff
+
+
+
+
+
+(l) Which of the following is the most accurate assessment of the value of the logistic regression model with a cutoff 0.5 to a parole board, based on the model's accuracy as compared to the simple baseline model?
+
+ The model is of limited value to the board because it cannot outperform a simple baseline, and using a different logistic regression cutoff is unlikely to improve the model's value.
+ The model is of limited value to the board because it cannot outperform a simple baseline, and using a different logistic regression cutoff is likely to improve the model's value.
+ The model is likely of value to the board, and using a different logistic regression cutoff is unlikely to improve the model's value.
+ The model is likely of value to the board, and using a different logistic regression cutoff is likely to improve the model's value.
+
+
+Ans: 4
+The model is likely of value to the board. 
+The model at cutoff 0.5 has 12 false positives and 11 false negatives, while the baseline model has 0 false positives and 23 false negatives.
+
+Using a different logistic regression cutoff is likely to improve the model's value.
+From the previous question, the parole board would likely benefit from decreasing the logistic regression cutoffs, which decreases the false negative rate while increasing the false positive rate.
+
+
+(m) Using the ROCR package, what is the AUC value for the model?
+
+```{r}
+library(ROCR)
+ROCRpred = prediction(predictions, test$Violator)
+as.numeric(performance(ROCRpred, "auc")@y.values)
+
+```
+The AUC value for the model is 0.8945834
+
+
+
+(n) Describe the meaning of AUC in this context.
+ The probability the model can correctly differentiate between a randomly selected parole violator and a randomly selected parole non-violator.
+ The model's accuracy at logistic regression cutoff of 0.5.
+ The model's accuracy at the logistic regression cutoff at which it is most accurate.
+
+
+Ans: A
+The AUC deals with differentiating between a randomly selected positive and negative example. It is independent of the regression cutoff selected.
+
+
+
+
+(o) Our goal has been to predict the outcome of a parole decision, and we used a publicly available dataset of parole releases for predictions. In this final problem, we'll evaluate a potential source of bias associated with our analysis. 
+It is always important to evaluate a dataset for possible sources of bias. The dataset contains all individuals released from parole in 2004, either due to completing their parole term or violating the terms of their parole. However, it does not contain parolees who neither violated their parole nor completed their term in 2004, causing non-violators to be underrepresented. This is called \selection bias" or \selecting on the dependent variable," because only a subset of all relevant parolees were included in our analysis, based on our dependent variable in this analysis (parole violation). How could we improve our dataset to best address selection bias?
+
+
+ There is no way to address this form of biasing. 
+ We should use the current dataset, expanded to include the missing parolees. Each added parolee should be labeled with Violator=0, because they have not yet had a violation.
+ We should use the current dataset, expanded to include the missing parolees. Each added parolee should be labeled with Violator=NA, because the true outcome has not been observed for these individuals.
+ We should use a dataset tracking a group of parolees from the start of their parole until either they violated parole or they completed their term.
+
+
+Ans: 4
+
+While expanding the dataset to include the missing parolees and labeling each as violator=0 would improve the representation of non-violators, it does not capture the true outcome, since the parolee might become a violator after 2004. Though labeling these new examples with violator=NA correctly identifies that we don't know their true outcome, we cannot train or test a prediction model with a missing dependent variable.
+
+Option 2 does not capture the true outcome of parolees since they are still either in jail, or not violated thus far. 
+Option 3 does not help us to build a better model.
+Option 4 is the best, where they are tracked until they violate the parole or complete the term. However, such a dataset requires more effort to gather.
+
+
+
+
+****************************************************************************************************************************
+Question 3
+
+
+Credit scoring rules are used to determine if a new applicant should be classiffed as a good credit risk or a bad credit risk, based on values for one or more of the predictor variables. Lenders such as banks and credit card companies use credit scores to determine if money should be lent to consumers. The file germandcredit.csv contains data on 1000 past credit applicants from Germany. 
+
+In this question, we want to develop a model that may be used to determine if new applicants present a good credit risk or a bad credit risk. The dataset contains the following variables:
+
+ chkacct: Status of existing checking account. 
+Variable is coded as:
+0: < 0 DM (Deutsche Mark)
+1: 0 <= ... < 200 DM
+2: >= 200 DM/salary assignments for at least 1 year
+3: no checking account
+
+ dur: Duration of credit in months
+
+ hist: Credit history.
+Variable is coded as:
+0: no credits taken
+1: all credits at this bank paid back duly
+2: existing credits paid back duly till now
+3: delay in paying of in the past
+4: critical account
+
+ newcar: Purpose of credit (new car). 
+Variable is coded as: 0: No, 1: Yes
+
+ usedcar: Purpose of credit (used car). 
+Variable is coded as: 0: No, 1: Yes
+
+ furn: Purpose of credit (used furniture/equipment). 
+Variable is coded as: 0: No, 1: Yes
+
+ radiotv: Purpose of credit (radio/television). 
+Variable is coded as: 0: No, 1: Yes
+
+ educ: Purpose of credit (education). 
+Variable is coded as: 0: No, 1: Yes
+
+ retrain: Purpose of credit (retraining). 
+Variable is coded as: 0: No, 1: Yes
+
+ amt: Credit amount
+
+ sav: Average balance in savings account. 
+Variable is coded as:
+0: < 100 DM
+1: 100 <= ... < 500 DM
+2: 500 <= ... < 1000 DM
+3: >= 1000 DM
+4: unknown/ no savings account
+
+ emp: Present employment since. 
+Variable is coded as:
+0: unemployed
+1: < 1 year
+2: 1 <= ... < 4 years
+3: 4 <= ... < 7 years
+4: >= 7 years
+
+ instrate: Installment rate in percentage of disposable income
+
+ malediv: Applicant is male and divorced. 
+Variable is coded as: 0: No, 1: Yes
+
+ malesingle: Applicant is male and single. 
+Variable is coded as: 0: No, 1: Yes
+
+ malemarwid: Applicant is male and married or a widower. 
+Variable is coded as: 0: No, 1: Yes
+
+ coapp: Applicant has a co-applicant. 
+Variable is coded as: 0: No, 1: Yes
+
+ guar: Applicant has a guarantor. 
+Variable is coded as: 0: No, 1: Yes
+
+ presres: Present resident since in years. 
+Variable is coded as:
+0: <= 1 year
+1: 1 < ... <= 2 years
+2: 2 < ... <= 3 years
+3: > 4 years
+
+ realest: Applicant owns real estate. 
+Variable is coded as: 0: No, 1: Yes
+
+ propnone: Applicant owns no property (or unknown). 
+Variable is coded as: 0: No, 1: Yes
+
+ age: Age in years
+
+ other: Applicant has other installment plan credit. 
+Variable is coded as: 0: No, 1: Yes
+
+ rent: Applicant rents. 
+Variable is coded as: 0: No, 1: Yes
+
+ ownres: Applicant owns residence. 
+Variable is coded as: 0: No, 1: Yes
+
+ numcred: Number of existing credits at this bank
+
+ job: Nature of job. 
+Variable is coded as:
+0: unemployed/unskilled - non-resident
+1: unskilled - resident
+2: skilled employee/ocial
+3: management/self-employed/highly qualied employee/officer
+
+ numdep: Number of people for whom liable to provide maintenance
+
+ tel: Applicant has phone in his or her name. 
+variable is coded as: 0: No, 1: Yes
+
+ foreign: Foreign worker. 
+Variable is coded as: 0: No, 1: Yes
+
+ resp: Credit rating is good. 
+Variable is coded as: 0: No, 1: Yes
+
+(a) Read the data into the dataframe germancredit. 
+We are interested in predicting the resp variable. Obtain a random training/test set split with:
+- set.seed(2016)
+- library(caTools)
+- spl <- sample.split(germancredit$resp, 0.75)
+
+Split the data frame into a training data frame called \training" using the observations for which spl is TRUE and a test data frame called \test" using the observations for which spl is FALSE. 
+
+- Why do we use the sample.split() function to split into a training and testing set? 
+ It is the only method in R to randomly split the data.
+ It balances the independent variables between the training and testing sets.
+ It balances the dependent variable between the training and testing sets.
+Select the best option.
+
+```{r}
+germancredit <- read.csv("germancredit.csv")
+str(germancredit)
+
+set.seed(2016)
+library(caTools)
+spl <- sample.split(germancredit$resp, 0.75)
+
+germancreditTRAIN <- subset(germancredit, spl == TRUE)
+germancreditTEST <- subset(germancredit, spl == FALSE)
+```
+
+Ans: C
+
+
+
+(b) We start with the simplest logistic regression model to predict credit risk in the training set using no predictor variables except the constant (intercept). 
+- Write down the fitted model.
+
+```{r}
+glm3b <- glm(data = germancreditTRAIN, family=binomial, resp~1)
+
+summary(glm3b)
+
+exp(0.84730)/(1+exp(0.84730))
+mean(germancreditTRAIN$resp)
+```
+
+The model is only the intercept, with value of 0.84730
+The probability = exp(0.84730)/(1+exp(0.84730)) = 0.70
+
+The fitted model is: resp = 0.7 
+
+
+
+(c) Provide a precise mathematical relationship between the estimated coeffcient and the fraction of respondents with a good credit rating in the training set.
+
+Since we are only using the intercept, the model gives the result of the average resp of the training set, which is 0.7.
+
+
+
+(d) We now develop a logistic regression model to predict credit card default using all the possible predictor variables. 
+- Identify all variable that are signifcant at the 10% level.
+```{r}
+glm3d <- glm(data = germancreditTRAIN,family=binomial, resp~.)
+
+summary(glm3d)
+```
+chkacct, dur, hist, amt, sav, instrate, malesingle, age, for 
+are all significant at the 0.1 significance level
+
+
+
+(e) What is the log likelihood value for this model?
+
+AIC = 2k - 2log(likelihood)
+751.55 = 2(31) -2log(likelihood)
+log(likelihood) = 0.5*(2(31)-789.12)
+
+OR
+
+LL = -0.5*Residual deviance
+
+```{r}
+0.5*(2*31-751.55)
+
+-0.5*689.55
+
+```
+log(likelihood) = -344.775
+
+
+
+(f) Compute the confusion matrix on the test set. 
+For the logistic regression model use a threshold of 0.5.
+
+```{r}
+germancreditPRED <- predict(glm3d, newdata = germancreditTEST, type="response")
+
+summary(germancreditPRED)
+table(germancreditPRED>0.5,germancreditTEST$resp)
+```
+
+
+(g) What is the accuracy of the model?
+
+```{r}
+
+(40+157)/(40+157+18+35)
+```
+Accuracy is 0.776
+
+
+(h) Redo the logistic regression model to predict credit risk using only the predictor variables that were significant at the 10% level in (d). What is the AIC value for this model?
+
+```{r}
+glm3h <- glm(data = germancreditTRAIN, family=binomial, resp~chkacct+dur+hist+amt+sav+instrate+malesingle+age+for.-1)
+
+summary(glm3h)
+
+```
+
+The AIC for this model is 794.1, which is higher than the previous model's 751.55
+
+
+(i) Based on the AIC, which model is preferable?
+h's AIC is 750.24
+d's AIC is 751.55
+
+d is lower so it is preferable
+
+
+
+(j) Compute the confusion matrix on the test set for the model in (h). 
+For the logistic regression model use a threshold of 0.5.
+
+```{r}
+germancreditPRED2 <- predict(glm3h, newdata = germancreditTEST, type="response")
+
+table(germancreditPRED2>0.5,germancreditTEST$resp)
+
+```
+
+
+(k) Based on the fraction of people who are predicted as good credit risk but are actually bad credit risk in the test set, which model is preferable?
+
+Looking for false positives. Check type I error: FPR = FP/FP+TN
+
+```{r}
+35/(35+40) #for d
+42/(42+33) #for h
+
+```
+h gives more false positives than d. So d is preferable.
+
+
+
+(l) Based on the fraction of people who are predicted as bad credit risk but are actually good credit risk in the test set, which model is preferable?
+
+Looking for false negatives. Check type II Error: FN/FN+TP
+```{r}
+18/(18+157) #for d
+15/(15+160) #for h
+
+```
+Here, d fairs poorly, showing more false negatives than h. h is preferable
+
+
+
+(m) Based on the area under the curve in the test set, which model is preferable?
+
+Looking for accuracy? NO, use AUC
+
+```{r}
+library(ROCR)
+predrocr2 <- prediction(germancreditPRED, germancreditTEST$resp)
+auc2 <- performance(predrocr2, measure = "auc")@y.values
+
+predrocr3 <- prediction(germancreditPRED2, germancreditTEST$resp)
+auc3 <- performance(predrocr3, measure = "auc")@y.values
+
+auc2
+auc3
+
+```
+
+AUC for model d is 0.829, 
+AUC for model h is 0.782. 
+d would be preferred to h.
+
+
+
+
+(n) From this point onwards, we use the model with all the predictor variables included. We now consider a more sophisticated way to evaluate the consequence of misclassiffcation. The consequences of misclassiffcation by the credit company is assessed as follows: 
+costs of incorrectly saying an applicant is a good credit risk is 300 DM 
+while the profit of correctly saying an applicant is a good credit risk is 100 DM. 
+
+In terms of proft this can be considered in terms of a table as follows:
+
+                Actual_Bad Actual_Good
+Predicted_Bad         0         0 
+Predicted_Good      -300       100
+
+What is the total profit incurred by the credit company on the test set?
+
+```{r}
+table(germancreditPRED>0.5,germancreditTEST$resp)
+
+
+(157*100)+(35*-300)
+```
+
+Profit = 5200 DM
+
+
+
+(o) To see if we can improve the performance by changing the threshold, we will use the predicted probability of credit risk from the logistic regression as a basis by selecting the good credit risks first, followed by poorer risk applicants. 
+- Sort the test set on the predicted probability of good credit risk from high to low (Hint: You can use the sort command).
+- What is the duration of credit in months for the individual with the lowest predicted probability of good credit risk?
+
+```{r}
+sortpred2 <- sort(germancreditPRED, decreasing=TRUE)
+tail(sortpred2)
+germancredit[819,]
+```
+
+Last value (819) has predicted probabilty of 0.02534326
+comparing this to the original dataset, his duration is 36
+
+
+
+(p) For each observation in the sorted test set, calculate the actual profit of providing credit (use the table in (n)). 
+- Compute the net profit by adding a new variable that captures the cumulative profit. 
+- How many far down the test set do you need to go in order to get the maximum profit? 
+(Hint. You can use the index from the index.return argument in thesort function and use the cumsum function)
+
+```{r}
+sortpred2 <- sort(germancreditPRED, decreasing=TRUE,index.return=TRUE)
+sortpred2$x #gives the sorted values,
+sortpred2$ix #returns the indices of the sorted values
+germancreditTEST$resp[sortpred2$ix]
+
+profitpred2 <- 100*germancreditTEST$resp[sortpred2$ix] -300*(1-germancreditTEST$resp[sortpred2$ix])
+cumulative <- cumsum(profitpred2)
+max(cumulative)
+
+which.max(cumulative)
+
+```
+
+
+The maximum profit is given as 7800, with argmax at the 150th person.
+
+
+
+
+
+(q) If the logistic regression model from (p) is scored to future applicants, what \probability of good credit risk" cutoff should be used in extending credit?
+
+```{r}
+sortpred2$x[which.max(cumulative)]
+```
+
+The corresponding probability is 0.7187. We would use this as a cutoff to credit goal and bad risk based on this data. (to get max profit)
+
+
+
+
+****************************************************************************************************************************
+Question 4
+
+There has been significant interest in the results of the U.S. elections in November 2016. In this question you will build a model that would have helped predict the winner of the U.S. presidential elections using data which was available before the elections. The model will use past election outcomes and the state of the economy to predict how people might vote. 
+The data is provided in the file presidential.csv and contains the following variables:
+
+ YEAR: Year of the U.S. presidential election
+
+ DEM: Name of Democratic nominee
+
+ REP: Name of Republican nominee
+
+ INC: Incumbent (party in power) leading up to that election (1 = Democratic, -1 = Republican)
+
+ RUN: Variable to indicate if the incumbent president is running for the presidential election again 
+(1 = Democratic incumbent president is running, -1 = Republican incumbent president is running, 0 = otherwise. 
+For example after becoming president in 2008, Obama ran for presidential elections again as a Democrat in 2012 implying that the corresponding entry is 1.)
+
+ DUR: Duration of the current party in power in the White House 
+(0 = Incumbent has been in power only for one term before the election, 
+1 (-1) if the Democratic (Republican) party has been in the White House for two consecutive terms, 
+1.25 (-1.25) if the Democratic (Republican) party has been in the White House for three consecutive terms,
+1.50 (-1.50) if the Democratic (Republican) party has been in the White House for four consecutive terms, and so on)
+
+ GROWTH: Growth rate of the real per capita GDP in the year of the election (%)
+
+ GOOD: Number of good quarters (in terms of performance in the growth rate of the real capita per GDP) in the first fifteen quarters of the current administration
+
+ WIN: Winner of the presidential election (1 = Democratic, -1 = Republican)
+
+
+(a) Read the dataset into the dataframe pres. In the elections starting from 1916 up to and including 2012, 
+- which party has won more presidential elections? 
+- How many elections has that party won?
+
+```{r}
+
+pres <- read.csv("presidential.csv")
+str(pres)
+
+table(pres$WIN)
+```
+The Democrats won more elections (14 vs 11 Rep)
+
+
+(b) Who among the nominees have represented the Democrats and the Republicans in the most number of presidential elections? 
+How many times have they respectively done so?
+
+```{r}
+table(pres$DEM)
+table(pres$REP)
+```
+Democrats: Roosevelt, 4 Times
+Republicans: Nixon, 3 Times
+
+
+
+(c) Use a two-sided t-test to verify if there is evidence to show that the number of good quarters when the president is Republican is different from the number of good quarters when the president is Democratic. 
+- What is the p-value of the test and your conclusion?
+
+```{r}
+t.test(pres$GOOD[pres$WIN==-1],pres$GOOD[pres$WIN==1])
+
+```
+The p-value is 0.3322, There is insufficient evidence to reject the null hypothesis that the number of good quarters are the same
+
+
+
+
+(d) Define a new variable WININC that takes a value of 1 if the presidential nominee of the incumbent party wins and 0 otherwise. 
+- Provide the R command(s) that you used to create this variable.
+
+```{r}
+table(pres$INC,pres$WIN)
+wininc <-  as.numeric(!as.logical(pres$INC-pres$WIN)) #IF INC = WIN then TRUE, ELSE FALSE
+wininc
+pres$INC #to check
+pres$WIN #to check
+
+pres$WININC <- wininc
+
+#OR
+#pres$WININC <- as.integer(pres$INC == pres$WIN)
+```
+
+(e) How many times did the presidential nominee from the incumbent party win and how many times did the presidential nominee from the incumbent party lose?
+
+```{r}
+table(pres$WININC)
+
+```
+The incumbent party won 16 times, the incumbent party lost 9 times.
+
+
+
+(f) Perform a simple logistic regression to predict the WININC variable using the GROWTH variable and the constant. 
+- What is the log-likelihood value for the model?
+```{r}
+glm4f <- glm(data=pres,family="binomial",WININC~GROWTH)
+summary(glm4f)
+
+0.5*(2*2 - 30.365) #remember to include intercept
+```
+AIC = 2k - 2LL
+LL = 0.5(2k-AIC)
+LL = -13.1825
+
+
+
+(g) The GROWTH variable is:
+ Significant at the 0.001 level
+ Significant at the 0.01 level
+ Significant at the 0.05 level
+ Significant at the 0.1 level
+ Insignificant
+
+Ans: D. Significant at the 0.1 level
+
+
+
+
+(h) Unlike questions (d) to (g) which looked at the incumbent party's winning chances, from this point onwards, we are going to predict the chances of the Democratic party nominee winning in the presidential election. 
+To do this, we need to transform the variables as follows:
+
+i. Transform the WIN variable to be 1 when the presidential winner is a Democrat and 0 when the winner is a Republican.
+
+ii. Transform the GROWTH variable as follows: When the growth rate is positive (say 4.623) and the Republican party is incumbent, we should transform it to a negative value -4.623 since this should have a negative effect on the Democratic nominee's chances of winning, while if the growth rate is negative (say -4.623) and the Republican party is incumbent, we should transform it to positive 4.623 since this should have a
+positive effect on the Democratic nominee's chances of winning.
+
+Write down the R command(s) for i and ii.
+```{r}
+presDEM <- pres
+presDEM$WIN <- as.numeric(as.logical(presDEM$WIN + 1)) #part i
+#OR
+#pres$WIN <- as.integer(pres$WIN == 1)
+presDEM$GROWTH <- presDEM$INC*presDEM$GROWTH  #part ii
+
+```
+
+
+(i) Repeat step ii in question (h) for the GOOD variable. 
+You are now ready to develop a logistic regression model for the WIN variable using the predictor variables INC, RUN, DUR, GROWTH, GOOD and the constant (intercept). 
+- Use all the observations to build your model. 
+- What is the AIC of the model?
+
+
+```{r}
+presDEM$GOOD <- presDEM$INC*presDEM$GOOD
+
+glm4i <- glm(data=presDEM,family = binomial, WIN~INC+RUN+DUR+GROWTH+GOOD)
+summary(glm4i)
+
+```
+
+The AIC for the model is 29.406
+
+
+(j) Among the predictor variables INC, RUN, DUR, GROWTH, GOOD and the constant (intercept), identify the three least significant variables?
+The 3 least significant variables are Intercept, Inc and GOOD
+
+
+
+(k) Drop the three variables identified in question (j) and rebuild you logistic regression model.
+What is the AIC of the new model?
+
+```{r}
+glm4k <- glm(data=presDEM,family = binomial, WIN~RUN+DUR+GROWTH-1)
+summary(glm4k)
+```
+The new AIC is 23.748
+
+
+(l) In this new model, what is the smallest significance level at which you would reject the null hypothesis that the coeffcient for the variable DUR is zero? 
+Suppose, we now decide to use a level of 0.10, what would your suggestion be?
+
+0.15 significance level
+Fail to reject the null hypothesis at 0.10
+
+
+
+(m) Which among the two models that you have developed in questions (i) and (k) do you prefer? 
+Explain your reasons briefy.
+
+2nd is better as have lower AIC, the variables are also more significant. By dropping the variables deemed insignificant to form this model, we also have a more interpretable model
+
+
+
+
+
+(n) We will now evaluate the probability of H.Clinton winning the 2016 election with this model where H.Clinton is the Democratic nominee and D.Trump is the Republican nominee.
+- What should be the corresponding INC, RUN and DUR variables?
+INC = 1 (Obama is DEM)
+RUN = 0 (Both will be new)
+DUR = 1 (Obama in for 2 terms)
+
+
+
+(o) The forecasted growth rate from analysts of the U.S. economy for this year is 2%. 
+Based on this, what is the probability of H.Clinton winning in the upcoming election based on the model you developed in question (11)?
+GROWTH = 2
+
+RUN + DUR + GROWTH
+0*2.0638 + 1*-1.7852 + 2*0.469 =  -1.77582
+
+```{r}
+LOGelection = 0*2.0638 + 1*-1.7852 + 2*0.469 
+election = exp(LOGelection)
+
+election/(1+election)
+```
+
+H.Clinton will win with probability of 0.3
+
+
+
+
+
+

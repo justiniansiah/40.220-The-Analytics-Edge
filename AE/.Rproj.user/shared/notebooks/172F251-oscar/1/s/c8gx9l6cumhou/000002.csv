@@ -1,0 +1,1 @@
+"0","M <- mlogit(Ch~Nom+Dir+GG+Aml+Afl+PGA+Days+Length-1, data=D)"

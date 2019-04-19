@@ -1,0 +1,11 @@
+"0","library(ROCR)"
+"0","ROCR_Predict_RF <- prediction(predictRF[,2], train$spam)"
+"0","performance(ROCR_Predict_RF, measure = ""auc"")@y.values"
+"1","[[1]]
+"
+"1","[1]"
+"1"," 0.9999959"
+"1","
+"
+"1","
+"

@@ -1,0 +1,7 @@
+"0","pred_cart2d <- predict(cart2d, newdata = Q2test)"
+"0","mseQ2d <- mean((pred_cart2d-Q2test$medv)^2)"
+"0","mseQ2d"
+"1","[1]"
+"1"," 28.25719"
+"1","
+"
